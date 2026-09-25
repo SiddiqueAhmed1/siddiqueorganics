@@ -1,7 +1,7 @@
 import prisma from "../lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
-import { Star, ShoppingCart } from "lucide-react";
+import { Star, ShoppingCart, ArrowRight } from "lucide-react";
 
 interface ProductData {
   id: string;
@@ -112,12 +112,78 @@ export default async function HomePage() {
           <Image
             src="/siddique-organics-sundarban-honey-raw-honey-pure-honey-healthy-lifestyle-khati-modhu-honey.png"
             alt="Siddique Organics"
-            width={1400}
-            height={220}
-            className="object-contain w-full h-[220px] object-left transition-transform group-hover:scale-105"
+            width={2300}
+            height={350}
+            className="object-contain w-full h-full object-left transition-transform group-hover:scale-105"
             priority
           />
         </h1>
+      </section>
+
+      {/* PRESETS IMAGE-PLACEHOLDER SHOP BY CATEGORY CARD UI GRID */}
+      <section className="space-y-4">
+        <div className="border-b border-[#0E3A24]/10 pb-3">
+          <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24] uppercase tracking-wide">
+            Shop by Category
+          </h2>
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            {
+              name: "Pure Honey",
+              slug: "honey",
+              localImg: "/pure-honey.jpeg",
+            },
+            {
+              name: "Premium Oils",
+              slug: "oil",
+              localImg: "/replace-with-your-oil-image.jpg",
+            },
+
+            {
+              name: "Organic Nuts",
+              slug: "nuts",
+              localImg: "/replace-with-your-nuts-image.jpg",
+            },
+            {
+              name: "Healthy Seeds",
+              slug: "seeds",
+              localImg: "/replace-with-your-seeds-image.jpg",
+            },
+          ].map((cat) => (
+            <Link
+              key={cat.slug}
+              href={`/categories/${cat.slug}`}
+              className="group p-4 sm:p-5 rounded-2xl bg-white border border-[#0E3A24]/5 hover:border-[#3B7A42]/30 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+            >
+              <div className="absolute right-[-10px] bottom-[-10px] w-16 h-16 rounded-full bg-[#3B7A42]/5 group-hover:bg-[#3B7A42]/10 transition-colors"></div>
+
+              <div className="space-y-4 relative z-10 w-full">
+                {/* Strict Dimension Container Block where you will insert your local assets later */}
+                <div className="w-full h-24 sm:h-32 bg-[#F9F8F3] rounded-xl relative overflow-hidden flex items-center justify-center border border-[#0E3A24]/5">
+                  <Image
+                    src={cat.localImg}
+                    alt={cat.name}
+                    fill
+                    sizes="(max-width: 640px) 50vw, 25vw"
+                    className="object-cover transition-transform duration-500 group-hover:scale-105"
+                    // fallback="data:image/svg+xml;utf8,<svg xmlns='http://w3.org' width='100' height='100' viewBox='0 0 24 24' fill='none' stroke='%230E3A24' stroke-width='1' stroke-linecap='round' stroke-linejoin='round'><rect width='18' height='18' x='3' y='3' rx='2' ry='2'/><circle cx='9' cy='9' r='2'/><path d='m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21'/></svg>" // Gracefully loads minimalist SVG matrix if local file is missing initially
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <h3 className="font-extrabold text-[#0E3A24] text-sm sm:text-base group-hover:text-[#3B7A42] transition-colors">
+                    {cat.name}
+                  </h3>
+                  <span className="text-[11px] text-[#3B7A42] font-bold flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                    Explore Collection{" "}
+                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
+                  </span>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
       </section>
 
       <section className="space-y-4">
