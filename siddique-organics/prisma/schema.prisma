@@ -12,13 +12,13 @@ datasource db {
   provider = "postgresql"
 }
 
-// user model
+// 1. Employee & Admin Authentication Model
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  password  String // Hashed password 
-  name      String // employee name
-  role      Role     @default(EMPLOYEE) // admin or employee
+  password  String // Encrypted/Hashed password credentials
+  name      String // Full profile name of the employee or admin
+  role      Role     @default(EMPLOYEE) // Access control indicator
   createdAt DateTime @default(now())
 }
 
@@ -27,43 +27,46 @@ enum Role {
   EMPLOYEE
 }
 
-// product model
+// 🛒 2. Dynamic E-Commerce Product Model (Includes all 8 core fields)
 model Product {
   id          String      @id @default(cuid())
-  name        String
-  slug        String      @unique
-  description String      @db.Text
-  price500g   Float
-  price1kg    Float
-  images      String[]
-  stock       Int         @default(10)
+  name        String // Field 1: Display name of the organic food
+  slug        String      @unique // Field 2: SEO optimized URL mapping string
+  description String      @db.Text // Field 3: Rich details & benefits markdown storage
+  category    String // Field 4: Flat indexing category selection (oil, ghee, nuts, seeds)
+  price500g   Float // Field 5: Dedicated unit cost boundary for 500 grams variant
+  price1kg    Float // Field 6: Dedicated unit cost boundary for 1 kilogram variant
+  stock       Int         @default(10) // Field 7: Core inventory metric with automated reduction metrics
+  images      String[] // Field 8: Collection tracking URLs for product assets
   createdAt   DateTime    @default(now())
   orders      OrderItem[]
 
-  @@index([slug])
+  @@index([slug]) // High-speed indexing optimization profile for product view modals
 }
 
-// order model
+// 📦 3. Customer Single-Page Checkout Order Entity
 model Order {
   id           String      @id @default(cuid())
-  customerName String
-  phone        String
-  address      String      @db.Text
-  totalAmount  Float
-  status       OrderStatus @default(PENDING)
+  customerName String // Captured directly from checkout name string
+  phone        String // Customer contact baseline used for tracking verification
+  address      String      @db.Text // Full breakdown distribution drop points
+  totalAmount  Float // Aggregated item price calculations plus structural shipping indices
+  status       OrderStatus @default(PENDING) // Operational pipeline status metric
   createdAt    DateTime    @default(now())
   items        OrderItem[]
+
+  @@index([phone]) // High-efficiency compound lookup optimization for phone-based direct tracking
 }
 
-// order item model
+// 🔗 4. Line Items Mapping Sub-Relations (Join Entity)
 model OrderItem {
   id        String  @id @default(cuid())
   orderId   String
   order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
   product   Product @relation(fields: [productId], references: [id])
-  weight    String
-  quantity  Int
+  weight    String // Captures the chosen size matrix configuration ('500g' or '1kg')
+  quantity  Int // Volume indicators selected inside client viewport state modals
 }
 
 enum OrderStatus {
