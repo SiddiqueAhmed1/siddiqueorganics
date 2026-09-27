@@ -2,7 +2,13 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { getCart, type CartItem } from "@/lib/cart";
+import {
+  getCart,
+  getExpressCheckoutItem,
+  clearExpressCheckoutItem,
+  removeAllByProductId,
+  type CartItem,
+} from "@/lib/cart";
 import { submitCustomerOrder } from "@/actions/order.actions";
 
 const DELIVERY_CHARGE = 100;
@@ -10,6 +16,7 @@ const DELIVERY_CHARGE = 100;
 export default function CheckoutPage() {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
+  const [isExpress, setIsExpress] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -18,12 +25,20 @@ export default function CheckoutPage() {
   const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
-    // Reading localStorage must happen after mount (it doesn't exist on
-    // the server), so this intentionally syncs state from an effect to
+    // Reading storage must happen after mount (it doesn't exist on the
+    // server), so this intentionally syncs state from an effect to
     // avoid a server/client hydration mismatch.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setCart(getCart());
+    /* eslint-disable react-hooks/set-state-in-effect */
+    const expressItem = getExpressCheckoutItem();
+    if (expressItem) {
+      setCart([expressItem]);
+      setIsExpress(true);
+    } else {
+      setCart(getCart());
+      setIsExpress(false);
+    }
     setHydrated(true);
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, []);
 
   const subtotal = cart.reduce(
@@ -59,18 +74,37 @@ export default function CheckoutPage() {
       const result = await submitCustomerOrder(null, formData);
 
       if (!result.success) {
+        // Auto-recover: if the server told us exactly which line is
+        // invalid (deleted/out of stock), remove just that line instead
+        // of leaving the customer stuck.
+        if (result.invalidItemId) {
+          if (isExpress) {
+            clearExpressCheckoutItem();
+            setCart([]);
+          } else {
+            removeAllByProductId(result.invalidItemId);
+            setCart(getCart());
+          }
+        }
         setError(result.message);
         return;
       }
 
       // Save the server-confirmed order (authoritative prices/items) for
-      // the success page to read once, then clear the cart everywhere.
+      // the success page to read once.
       sessionStorage.setItem(
         "siddique_last_order",
         JSON.stringify(result.data),
       );
-      localStorage.removeItem("siddique_cart");
-      window.dispatchEvent(new Event("siddique_cart_sync"));
+
+      if (isExpress) {
+        // Express checkout never touched the saved cart — just clear
+        // the one-time express item.
+        clearExpressCheckoutItem();
+      } else {
+        localStorage.removeItem("siddique_cart");
+        window.dispatchEvent(new Event("siddique_cart_sync"));
+      }
 
       router.push("/order-success");
     });
@@ -157,11 +191,18 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* Order Summary (read-only) */}
+        {/* Order Summary (read-only — edit quantities from the cart drawer) */}
         <section className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 order-1 lg:order-2 h-fit">
-          <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24] mb-5">
-            Order Summary
-          </h2>
+          <div className="flex items-center justify-between mb-5">
+            <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24]">
+              Order Summary
+            </h2>
+            {isExpress && (
+              <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
+                Express Checkout
+              </span>
+            )}
+          </div>
 
           <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
             {cart.map((item) => (

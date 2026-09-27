@@ -49,7 +49,73 @@ export function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
   saveCart(cart);
 }
 
-/** Replaces the whole cart with a single item — used by "Buy Now". */
-export function setBuyNowCart(item: Omit<CartItem, "quantity">, quantity = 1) {
-  saveCart([{ ...item, quantity }]);
+/** Sets the exact quantity for a line (id + weight). Removing a line
+ * entirely is just `updateQuantity(id, weight, 0)`. */
+export function updateQuantity(id: string, weight: string, quantity: number) {
+  const cart = getCart();
+  if (quantity < 1) {
+    saveCart(cart.filter((c) => !(c.id === id && c.weight === weight)));
+    return;
+  }
+  saveCart(
+    cart.map((c) =>
+      c.id === id && c.weight === weight ? { ...c, quantity } : c,
+    ),
+  );
+}
+
+export function removeFromCart(id: string, weight: string) {
+  saveCart(getCart().filter((c) => !(c.id === id && c.weight === weight)));
+}
+
+/** Removes every line for a product id, regardless of weight — used to
+ * recover from a checkout rejection ("product no longer available"). */
+export function removeAllByProductId(id: string) {
+  saveCart(getCart().filter((c) => c.id !== id));
+}
+
+export function clearCart() {
+  saveCart([]);
+}
+
+export function getCartTotals(cart: CartItem[] = getCart()) {
+  const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const totalPrice = cart.reduce(
+    (sum, item) => sum + item.price * item.quantity,
+    0,
+  );
+  return { totalItems, totalPrice };
+}
+
+// --- Express checkout ("Buy Now") ---
+// Stored separately in sessionStorage (tab-scoped, one-time use) so it
+// NEVER overwrites the customer's saved cart. The checkout page checks
+// this first; if present, it checks out only this item and leaves the
+// real cart untouched.
+const EXPRESS_ITEM_KEY = "siddique_express_item";
+
+export function setExpressCheckoutItem(
+  item: Omit<CartItem, "quantity">,
+  quantity = 1,
+) {
+  if (typeof window === "undefined") return;
+  sessionStorage.setItem(
+    EXPRESS_ITEM_KEY,
+    JSON.stringify({ ...item, quantity }),
+  );
+}
+
+export function getExpressCheckoutItem(): CartItem | null {
+  if (typeof window === "undefined") return null;
+  try {
+    const raw = sessionStorage.getItem(EXPRESS_ITEM_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function clearExpressCheckoutItem() {
+  if (typeof window === "undefined") return;
+  sessionStorage.removeItem(EXPRESS_ITEM_KEY);
 }

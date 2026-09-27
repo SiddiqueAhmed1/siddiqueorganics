@@ -28,12 +28,26 @@ interface ActionResponse {
   message: string;
   orderId?: string;
   data?: OrderConfirmation | unknown;
+  /** Present when a specific cart line caused the failure (e.g. the
+   * product was deleted or is out of stock), so the client can remove
+   * just that line instead of blocking the whole cart. */
+  invalidItemId?: string;
 }
 
 interface CartItemInput {
   id: string;
   weight: string;
   quantity: number;
+}
+
+class OrderValidationError extends Error {
+  itemId?: string;
+
+  constructor(message: string, itemId?: string) {
+    super(message);
+    this.name = "OrderValidationError";
+    this.itemId = itemId;
+  }
 }
 
 const DELIVERY_CHARGE = 100;
@@ -121,13 +135,15 @@ export async function submitCustomerOrder(
         });
 
         if (!product) {
-          throw new Error(
-            "One of the products in your cart is no longer available.",
+          throw new OrderValidationError(
+            "One of the products in your cart is no longer available. It has been removed — please review your cart and try again.",
+            item.id,
           );
         }
         if (product.stock < item.quantity) {
-          throw new Error(
+          throw new OrderValidationError(
             `Insufficient stock for ${product.name}. Only ${product.stock} units available.`,
+            item.id,
           );
         }
 
@@ -191,6 +207,14 @@ export async function submitCustomerOrder(
       },
     };
   } catch (error) {
+    if (error instanceof OrderValidationError) {
+      console.error("Checkout validation failure:", error.message);
+      return {
+        success: false,
+        message: error.message,
+        invalidItemId: error.itemId,
+      };
+    }
     const errorMessage =
       error instanceof Error
         ? error.message

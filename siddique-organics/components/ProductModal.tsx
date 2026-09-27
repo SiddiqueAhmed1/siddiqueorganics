@@ -4,8 +4,9 @@ import { useRef, useState } from "react";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { addToCart, setBuyNowCart } from "@/lib/cart";
+import { addToCart, setExpressCheckoutItem } from "@/lib/cart";
 import { flyToCart } from "@/lib/flyToCart";
+import { useCartDrawer } from "@/components/CartDrawerContext";
 
 export interface ProductModalProduct {
   id: string;
@@ -29,6 +30,7 @@ export default function ProductModal({
   product,
 }: ProductModalProps) {
   const router = useRouter();
+  const { openDrawer } = useCartDrawer();
   const [selectedWeight, setSelectedWeight] = useState<Weight>("1kg");
   const imageRef = useRef<HTMLImageElement>(null);
 
@@ -48,10 +50,14 @@ export default function ProductModal({
     flyToCart(imageRef.current, product.image);
     addToCart(buildItem());
     onClose();
+    openDrawer();
   };
 
+  // "Buy Now" is an express, single-item checkout — it must NOT touch
+  // the customer's saved cart. The item lives in sessionStorage only,
+  // for the checkout page to read and clear once used.
   const handleBuyNow = () => {
-    setBuyNowCart(buildItem());
+    setExpressCheckoutItem(buildItem());
     onClose();
     router.push("/checkout");
   };
