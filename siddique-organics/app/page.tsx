@@ -2,7 +2,6 @@ import prisma from "../lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
 import { Star, ShoppingCart, ArrowRight } from "lucide-react";
-import FloatingCart from "@/components/FloatingCart";
 import CartButtons from "@/components/CartButtons";
 
 interface ProductData {
@@ -53,10 +52,13 @@ export default async function HomePage() {
     (p) => p.category === "oil" || p.category === "oils",
   );
 
-  const renderProductCard = (product: ProductData) => (
+  const renderProductCard = (product: ProductData, rank?: number) => (
     <div
       key={product.id}
-      className="group rounded-2xl bg-white border border-[#0E3A24]/5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative"
+      data-product-card
+      className={`group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
+        rank ? "border-2 border-amber-400/50" : "border border-[#0E3A24]/5"
+      }`}
     >
       <div className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4">
         {product.images && product.images.length > 0 ? (
@@ -75,6 +77,11 @@ export default async function HomePage() {
         {product.stock <= 5 && product.stock > 0 && (
           <span className="absolute top-2 left-2 bg-[#6C4E31] text-white font-extrabold text-[9px] sm:text-sm px-2 py-0.5 rounded-full shadow-sm">
             Low Stock
+          </span>
+        )}
+        {rank && (
+          <span className="absolute top-2 right-2 bg-amber-500 text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
+            #{rank} Best Seller
           </span>
         )}
       </div>
@@ -98,10 +105,13 @@ export default async function HomePage() {
               ৳{product.price500g} - ৳{product.price1kg}
             </span>
           </div>
-          <button className="w-full h-9 sm:h-10 rounded-xl border border-[#0E3A24]/10 bg-[#0E3A24] text-white hover:bg-[#3B7A42] text-sm sm:text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors duration-200">
-            <ShoppingCart className="w-3.5 h-3.5" />
-            <span>Add to Cart</span>
-          </button>
+          <CartButtons
+            productId={product.id}
+            productName={product.name}
+            price500g={product.price500g}
+            price1kg={product.price1kg}
+            image={product.images?.[0] ?? "/placeholder.png"}
+          />
         </div>
       </div>
     </div>
@@ -201,7 +211,7 @@ export default async function HomePage() {
 
         {/* Dynamic Fallback: If database is empty, instantly render premium responsive mock matrix */}
         {products.length === 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="flex gap-3 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
             {[
               {
                 id: "mock-1",
@@ -231,10 +241,11 @@ export default async function HomePage() {
                 price1kg: 1050,
                 localImg: "/photos/nuts-cashew-nuts-almonds.jpg",
               },
-            ].map((mockProd) => (
+            ].map((mockProd, i) => (
               <div
                 key={mockProd.id}
-                className="group rounded-2xl bg-white border border-[#0E3A24]/5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative"
+                data-product-card
+                className="group rounded-2xl bg-white border-2 border-amber-400/50 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative shrink-0 w-[65%] xs:w-[45%] snap-start sm:w-auto"
               >
                 <div className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4">
                   <Image
@@ -244,8 +255,8 @@ export default async function HomePage() {
                     sizes="(max-width: 768px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <span className="absolute top-2 left-2 bg-[#6C4E31] text-white font-extrabold text-[9px] sm:text-sm px-2 py-0.5 rounded-full shadow-sm">
-                    Hot
+                  <span className="absolute top-2 right-2 bg-amber-500 text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
+                    #{i + 1} Best Seller
                   </span>
                 </div>
                 <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
@@ -263,24 +274,28 @@ export default async function HomePage() {
                         ৳{mockProd.price500g} - ৳{mockProd.price1kg}
                       </span>
                     </div>
-                    <div className="flex gap-1">
-                      <CartButtons
-                        productId={mockProd.id}
-                        productName={mockProd.name}
-                        price500g={mockProd.price500g}
-                      />
-                      <div className="right-0 top-1/2 -translate-y-1/2)">
-                        <FloatingCart />
-                      </div>
-                    </div>
+                    <CartButtons
+                      productId={mockProd.id}
+                      productName={mockProd.name}
+                      price500g={mockProd.price500g}
+                      price1kg={mockProd.price1kg}
+                      image={mockProd.localImg}
+                    />
                   </div>
                 </div>
               </div>
             ))}
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
-            {topSelling.map(renderProductCard)}
+          <div className="flex gap-3 sm:gap-6 overflow-x-auto snap-x snap-mandatory pb-2 -mx-4 px-4 sm:mx-0 sm:px-0 sm:grid sm:grid-cols-3 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+            {topSelling.map((product, i) => (
+              <div
+                key={product.id}
+                className="shrink-0 w-[65%] xs:w-[45%] snap-start sm:w-auto"
+              >
+                {renderProductCard(product, i + 1)}
+              </div>
+            ))}
           </div>
         )}
       </section>
@@ -341,10 +356,13 @@ export default async function HomePage() {
                         ৳{mockProd.price500g} - ৳{mockProd.price1kg}
                       </span>
                     </div>
-                    <button className="w-full h-10 sm:h-10 rounded-xl border border-[#0E3A24]/10 bg-[#0E3A24] text-white hover:bg-[#3B7A42] text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors duration-200">
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
-                    </button>
+                    <CartButtons
+                      productId={mockProd.id}
+                      productName={mockProd.name}
+                      price500g={mockProd.price500g}
+                      price1kg={mockProd.price1kg}
+                      image={mockProd.localImg}
+                    />
                   </div>
                 </div>
               </div>
@@ -409,10 +427,13 @@ export default async function HomePage() {
                         ৳{mockProd.price500g} - ৳{mockProd.price1kg}
                       </span>
                     </div>
-                    <button className="w-full h-10 sm:h-10 rounded-xl bg-[#0E3A24] text-white text-sm font-bold flex items-center justify-center gap-1.5">
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
-                    </button>
+                    <CartButtons
+                      productId={mockProd.id}
+                      productName={mockProd.name}
+                      price500g={mockProd.price500g}
+                      price1kg={mockProd.price1kg}
+                      image={mockProd.localImg}
+                    />
                   </div>
                 </div>
               </div>
@@ -477,10 +498,13 @@ export default async function HomePage() {
                         ৳{mockProd.price500g} - ৳{mockProd.price1kg}
                       </span>
                     </div>
-                    <button className="w-full h-10 sm:h-10 rounded-xl border border-[#0E3A24]/10 bg-[#0E3A24] text-white hover:bg-[#3B7A42] text-sm font-bold flex items-center justify-center gap-1.5 shadow-sm transition-colors duration-200">
-                      <ShoppingCart className="w-3.5 h-3.5" />
-                      <span>Add to Cart</span>
-                    </button>
+                    <CartButtons
+                      productId={mockProd.id}
+                      productName={mockProd.name}
+                      price500g={mockProd.price500g}
+                      price1kg={mockProd.price1kg}
+                      image={mockProd.localImg}
+                    />
                   </div>
                 </div>
               </div>

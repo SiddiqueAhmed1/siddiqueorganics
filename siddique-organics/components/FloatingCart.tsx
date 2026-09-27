@@ -3,14 +3,7 @@
 import { useEffect, useState } from "react";
 import { ShoppingBag } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-interface CartItem {
-  id: string;
-  name: string;
-  price: number;
-  weight: string;
-  quantity: number;
-}
+import { getCart, CART_SYNC_EVENT } from "@/lib/cart";
 
 export default function FloatingCart() {
   const router = useRouter();
@@ -20,54 +13,44 @@ export default function FloatingCart() {
 
   useEffect(() => {
     const calculateCartTotals = () => {
-      try {
-        const storedCart = localStorage.getItem("siddique_cart");
-        if (storedCart) {
-          const items: CartItem[] = JSON.parse(storedCart);
-          const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
-          const priceCount = items.reduce(
-            (sum, item) => sum + item.price * item.quantity,
-            0,
-          );
+      const items = getCart();
+      const itemCount = items.reduce((sum, item) => sum + item.quantity, 0);
+      const priceCount = items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0,
+      );
 
-          setTotalItems(itemCount);
-          setTotalPrice(priceCount);
-        } else {
-          setTotalItems(0);
-          setTotalPrice(0);
-        }
-      } catch (error) {
-        console.error("Failed to parse cart storage updates:", error);
-      }
+      setTotalItems(itemCount);
+      setTotalPrice(priceCount);
     };
 
-    // Initialize display bounds instantly upon hydration profiles
+    // Initialize display bounds instantly upon hydration
     calculateCartTotals();
 
     const handleCartSyncEvent = () => {
       calculateCartTotals();
       setIsUpdating(true);
-      setTimeout(() => setIsUpdating(false), 300); // Gentle feedback scale pulse duration
+      setTimeout(() => setIsUpdating(false), 600); // Gentle feedback scale pulse duration
     };
 
-    window.addEventListener("siddique_cart_sync", handleCartSyncEvent);
+    window.addEventListener(CART_SYNC_EVENT, handleCartSyncEvent);
     window.addEventListener("storage", calculateCartTotals);
 
     return () => {
-      window.removeEventListener("siddique_cart_sync", handleCartSyncEvent);
+      window.removeEventListener(CART_SYNC_EVENT, handleCartSyncEvent);
       window.removeEventListener("storage", calculateCartTotals);
     };
   }, []);
 
-  // Gracefully hide the floating side-bar widget if no items exist inside cart memory
-  if (totalItems === 0) return null;
-
+  // Always mounted (even at 0 items) so flyToCart always has a
+  // #floating-cart-target to land on. We just hide it visually.
   return (
     <button
+      id="floating-cart-target"
       onClick={() => router.push("/checkout")}
       className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 flex flex-col items-center justify-between w-16 sm:w-20 bg-[#0E3A24] text-white shadow-2xl border-l border-y border-[#3B7A42]/30 rounded-l-2xl overflow-hidden transition-all duration-300 transform active:scale-95 group ${
         isUpdating ? "scale-105 bg-[#3B7A42]" : ""
-      }`}
+      } ${totalItems === 0 ? "opacity-0 pointer-events-none translate-x-4" : "opacity-100"}`}
     >
       {/* Top Segment: Bag Icon & Item Counter Text Layout */}
       <div className="w-full flex flex-col items-center justify-center pt-3 pb-2 px-1 gap-1 text-center">

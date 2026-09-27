@@ -3,15 +3,49 @@
 import prisma from "../lib/prisma";
 import { revalidatePath } from "next/cache";
 
+interface OrderConfirmationItem {
+  productName: string;
+  weight: string;
+  quantity: number;
+  unitPrice: number;
+  subtotal: number;
+}
+
+export interface OrderConfirmation {
+  id: string;
+  customerName: string;
+  phone: string;
+  address: string;
+  totalAmount: number;
+  deliveryCharge: number;
+  status: string;
+  createdAt: string;
+  items: OrderConfirmationItem[];
+}
+
 interface ActionResponse {
   success: boolean;
   message: string;
   orderId?: string;
-  data?: unknown;
+  data?: OrderConfirmation | unknown;
 }
 
+interface CartItemInput {
+  id: string;
+  weight: string;
+  quantity: number;
+}
+
+const DELIVERY_CHARGE = 100;
+const MAX_QUANTITY_PER_ITEM = 5;
+
 /**
- * Server Action to handle secure single-page checkout, dynamic shipping verification, and atomic stock decrements.
+ * Server Action to handle secure multi-item checkout, dynamic shipping
+ * verification, and atomic stock decrements across every cart line.
+ *
+ * IMPORTANT: only `id`, `weight`, and `quantity` are trusted from the
+ * client's cart. Product name and price are always re-read from the
+ * database inside the transaction — never trust price from the client.
  */
 export async function submitCustomerOrder(
   prevState: ActionResponse | null,
@@ -21,9 +55,7 @@ export async function submitCustomerOrder(
     const customerName = formData.get("customerName") as string;
     const phone = formData.get("phone") as string;
     const address = formData.get("address") as string;
-    const productId = formData.get("productId") as string;
-    const weight = formData.get("weight") as string;
-    const quantityStr = formData.get("quantity") as string;
+    const cartItemsRaw = formData.get("cartItems") as string;
 
     if (!customerName || customerName.trim().length < 3) {
       return {
@@ -44,46 +76,86 @@ export async function submitCustomerOrder(
           "Please provide a complete delivery address (min 10 characters).",
       };
     }
-    if (!productId || !weight || !quantityStr) {
+
+    let cartItems: CartItemInput[] = [];
+    try {
+      cartItems = JSON.parse(cartItemsRaw || "[]");
+    } catch {
       return {
         success: false,
-        message: "Product specifications and volume metrics are missing.",
+        message: "Cart data could not be read. Please try again.",
       };
     }
 
-    const quantity = parseInt(quantityStr, 10);
-    if (isNaN(quantity) || quantity < 1 || quantity > 5) {
-      return {
-        success: false,
-        message:
-          "Invalid quantity parameters. Maximum 5 units allowed per order.",
-      };
+    if (!Array.isArray(cartItems) || cartItems.length === 0) {
+      return { success: false, message: "Your cart is empty." };
     }
 
-    // Explicitly typing the transaction execution context to avoid implicit any errors
-    const order = await prisma.$transaction(async (tx) => {
-      const product = await tx.product.findUnique({
-        where: { id: productId },
-      });
+    for (const item of cartItems) {
+      if (
+        !item.id ||
+        !item.weight ||
+        !item.quantity ||
+        item.quantity < 1 ||
+        item.quantity > MAX_QUANTITY_PER_ITEM
+      ) {
+        return {
+          success: false,
+          message: `Invalid item in cart. Maximum ${MAX_QUANTITY_PER_ITEM} units allowed per product.`,
+        };
+      }
+    }
 
-      if (!product) {
-        throw new Error(
-          "Target product no longer exists in our database directory.",
-        );
+    const result = await prisma.$transaction(async (tx) => {
+      let subtotalSum = 0;
+      const orderItemsData: {
+        productId: string;
+        weight: string;
+        quantity: number;
+      }[] = [];
+      const confirmationItems: OrderConfirmationItem[] = [];
+
+      for (const item of cartItems) {
+        const product = await tx.product.findUnique({
+          where: { id: item.id },
+        });
+
+        if (!product) {
+          throw new Error(
+            "One of the products in your cart is no longer available.",
+          );
+        }
+        if (product.stock < item.quantity) {
+          throw new Error(
+            `Insufficient stock for ${product.name}. Only ${product.stock} units available.`,
+          );
+        }
+
+        const unitPrice =
+          item.weight === "500g" ? product.price500g : product.price1kg;
+        const subtotal = unitPrice * item.quantity;
+        subtotalSum += subtotal;
+
+        orderItemsData.push({
+          productId: item.id,
+          weight: item.weight,
+          quantity: item.quantity,
+        });
+        confirmationItems.push({
+          productName: product.name,
+          weight: item.weight,
+          quantity: item.quantity,
+          unitPrice,
+          subtotal,
+        });
+
+        await tx.product.update({
+          where: { id: item.id },
+          data: { stock: { decrement: item.quantity } },
+        });
       }
 
-      if (product.stock < quantity) {
-        throw new Error(
-          `Insufficient stock. Only ${product.stock} units available for this item.`,
-        );
-      }
-
-      const unitPrice =
-        weight === "500g" ? product.price500g : product.price1kg;
-      const subtotal = unitPrice * quantity;
-
-      const deliveryCharge = 100;
-      const totalAmount = subtotal + deliveryCharge;
+      const totalAmount = subtotalSum + DELIVERY_CHARGE;
 
       const newOrder = await tx.order.create({
         data: {
@@ -92,26 +164,11 @@ export async function submitCustomerOrder(
           address: address.trim(),
           totalAmount,
           status: "PENDING",
-          items: {
-            create: {
-              productId,
-              weight,
-              quantity,
-            },
-          },
+          items: { create: orderItemsData },
         },
       });
 
-      await tx.product.update({
-        where: { id: productId },
-        data: {
-          stock: {
-            decrement: quantity,
-          },
-        },
-      });
-
-      return newOrder;
+      return { newOrder, confirmationItems, totalAmount };
     });
 
     revalidatePath("/");
@@ -120,7 +177,18 @@ export async function submitCustomerOrder(
     return {
       success: true,
       message: "Order placed successfully! Cash on Delivery confirmed.",
-      orderId: order.id,
+      orderId: result.newOrder.id,
+      data: {
+        id: result.newOrder.id,
+        customerName: result.newOrder.customerName,
+        phone: result.newOrder.phone,
+        address: result.newOrder.address,
+        totalAmount: result.totalAmount,
+        deliveryCharge: DELIVERY_CHARGE,
+        status: result.newOrder.status,
+        createdAt: result.newOrder.createdAt.toISOString(),
+        items: result.confirmationItems,
+      },
     };
   } catch (error) {
     const errorMessage =
@@ -134,6 +202,7 @@ export async function submitCustomerOrder(
 
 /**
  * UX-Optimized Direct Order Tracking via Customer Mobile Phone Number.
+ * (Unchanged.)
  */
 export async function trackOrderByPhone(
   prevState: ActionResponse | null,
@@ -142,7 +211,7 @@ export async function trackOrderByPhone(
   try {
     const phone = formData.get("phone") as string;
 
-    if (!phone || !/^(?:\+88|88)?(01[3-9]\d{8})\$/.test(phone.trim())) {
+    if (!phone || !/^(?:\+88|88)?(01[3-9]\d{8})$/.test(phone.trim())) {
       return {
         success: false,
         message: "Please provide a valid Bangladeshi mobile number to track.",

@@ -4,13 +4,13 @@ import Link from "next/link";
 export default function Footer() {
   return (
     <footer className="w-full  pt-12 pb-8 mt-16 px-4 sm:px-6 lg:px-8 border-t-4 border-[#3B7A42]">
-      <div className="mx-auto max-w-[1500px]">
+      <div className="mx-auto max-w-[1420px]">
         {/* Core Informational Matrix Grid Layout */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-10 text-center md:text-left">
           {/* Brand Signature Column */}
           <div className="space-y-4">
             <Image
-              width={200}
+              width={170}
               height={200}
               className="mix-blend-multiply"
               src="/photos/header-logo.jpg"
@@ -69,10 +69,10 @@ export default function Footer() {
         </div>
 
         {/* Global Structural Copyright Strip */}
-        <div className="w-full text-center border-t border-white/10 mt-10 pt-6 text-[11px] sm:text-xs text-white/40 font-medium tracking-wide">
-          © {new Date().getFullYear()} Siddique Organics Ltd. All corporate
-          rights reserved.
-        </div>
+      </div>
+      <div className="w-full text-center border-t  mt-10 py-6 text-[11px] sm:text-xs  font-bold tracking-wide">
+        © {new Date().getFullYear()} Siddique Organics Ltd. All corporate rights
+        reserved.
       </div>
     </footer>
   );

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { Search, Phone, ShoppingBag, ShoppingCart } from "lucide-react";
 import "./globals.css";
 import Footer from "@/components/Footer";
+import FloatingCart from "@/components/FloatingCart";
 import { Playfair_Display, Hind_Siliguri } from "next/font/google";
 
 // 1. Configure the premium typography profiles at the top layout scope
@@ -129,6 +130,7 @@ export default function RootLayout({
         </main>
 
         <Footer />
+        <FloatingCart />
       </body>
     </html>
   );
