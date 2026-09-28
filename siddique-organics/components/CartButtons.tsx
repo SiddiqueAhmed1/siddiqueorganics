@@ -1,8 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import dynamic from "next/dynamic";
 import { ShoppingBag } from "lucide-react";
-import ProductModal from "@/components/ProductModal";
+
+// The modal is only downloaded/mounted once someone actually opens it,
+// instead of shipping (and mounting) one per product card on page load.
+const ProductModal = dynamic(() => import("@/components/ProductModal"));
 
 interface CartButtonsProps {
   productId: string;
@@ -20,6 +24,7 @@ export default function CartButtons({
   image,
 }: CartButtonsProps) {
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const close = useCallback(() => setIsModalOpen(false), []);
 
   return (
     <>
@@ -31,17 +36,19 @@ export default function CartButtons({
         Buy Now
       </button>
 
-      <ProductModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        product={{
-          id: productId,
-          name: productName,
-          price500g,
-          price1kg,
-          image,
-        }}
-      />
+      {isModalOpen && (
+        <ProductModal
+          isOpen
+          onClose={close}
+          product={{
+            id: productId,
+            name: productName,
+            price500g,
+            price1kg,
+            image,
+          }}
+        />
+      )}
     </>
   );
 }

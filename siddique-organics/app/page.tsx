@@ -3,6 +3,21 @@ import Link from "next/link";
 import Image from "next/image";
 import { Star, ShoppingCart, ArrowRight } from "lucide-react";
 import CartButtons from "@/components/CartButtons";
+import HeroSlider from "@/components/HeroSlider";
+
+// Home page is statically cached and refreshed at most once a minute.
+// (Admin create/update already call revalidatePath("/") for instant refresh.)
+export const revalidate = 60;
+
+// Left banner slides. Add / reorder / swap images here — any file in /public.
+const HERO_SLIDES = [
+  {
+    src: "/siddique-organics-sundarban-honey-raw-honey-pure-honey-healthy-lifestyle-khati-modhu-honey.webp",
+    alt: "Siddique Organics Sundarban pure honey",
+  },
+  { src: "/photos/siddique-organics-banner2.webp", alt: "Pure raw honey" },
+  { src: "/photos/nuts-cashew-nuts-almonds.webp", alt: "Organic nuts" },
+];
 
 interface ProductData {
   id: string;
@@ -20,12 +35,22 @@ async function fetchStoreProducts(): Promise<ProductData[]> {
   try {
     const records = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+        category: true,
+        price500g: true,
+        price1kg: true,
+        stock: true,
+        images: true,
+      },
     });
     return records.map((item) => ({
       id: item.id,
       name: item.name,
       slug: item.slug,
-      description: item.description,
+      description: "",
       category: item.category
         ? item.category.trim().toLowerCase()
         : "uncategorized",
@@ -120,23 +145,17 @@ export default async function HomePage() {
   return (
     <div className="w-full bg-[#ffffff] space-y-12  pb-16">
       <section className="lg:mt-4 w-full h-full rounded-2xl sm:rounded-3xl flex items-center justify-center gap-3 text-center px-4 relative ">
-        <div className="lg:w-[70%]">
-          <Image
-            src="/siddique-organics-sundarban-honey-raw-honey-pure-honey-healthy-lifestyle-khati-modhu-honey.png"
-            alt="Siddique Organics"
-            width={2300}
-            height={350}
-            className="object-contain w-full h-full rounded-md"
-            priority
-          />
+        <div className="w-full lg:w-[70%]">
+          <HeroSlider slides={HERO_SLIDES} interval={4000} />
         </div>
-        <div className="hidden lg:w-[30%] lg:block ">
+        <div className="hidden lg:w-[30%] lg:block hover:scale-105 transition-all">
           <Image
-            src="/photos/siddique-organics-banner.jpg"
+            src="/photos/siddique-organics-banner.webp"
             alt="Siddique Organics"
             width={2400}
             height={500}
-            className="object-contain w-full h-[390px] rounded-md"
+            sizes="30vw"
+            className="object-contain w-full h-[390px] rounded-md "
             priority
           />
         </div>
@@ -155,19 +174,23 @@ export default async function HomePage() {
             {
               name: "Pure Honey",
               slug: "honey",
-              localImg: "/photos/category-honey.jpg",
+              localImg: "/photos/category-honey.webp",
             },
-            { name: "Premium Oils", slug: "oil", localImg: "/mustard-oil.jpg" },
-            { name: "Dates", slug: "dates", localImg: "/photos/dates.jpg" },
+            {
+              name: "Premium Oils",
+              slug: "oil",
+              localImg: "/mustard-oil.webp",
+            },
+            { name: "Dates", slug: "dates", localImg: "/photos/dates.webp" },
             {
               name: "Organic Nuts",
               slug: "nuts",
-              localImg: "/photos/nuts-cashew-nuts-almonds.jpg",
+              localImg: "/photos/nuts-cashew-nuts-almonds.webp",
             },
             {
               name: "Healthy Seeds",
               slug: "seeds",
-              localImg: "/photos/organics-seeds.jpg",
+              localImg: "/photos/organics-seeds.webp",
             },
           ].map((cat) => (
             <Link
@@ -218,28 +241,28 @@ export default async function HomePage() {
                 name: "সুন্দরবনের খাঁটি মধু | Sundarban Honey",
                 price500g: 650,
                 price1kg: 1200,
-                localImg: "/photos/category-honey.jpg",
+                localImg: "/photos/category-honey.webp",
               },
               {
                 id: "mock-2",
                 name: "Extra Virgin Wooden Pressed Mustard Oil",
                 price500g: 220,
                 price1kg: 400,
-                localImg: "/mustard-oil.jpg",
+                localImg: "/mustard-oil.webp",
               },
               {
                 id: "mock-3",
                 name: "Premium Premium Saudi Ajwa Dates",
                 price500g: 450,
                 price1kg: 850,
-                localImg: "/photos/dates.jpg",
+                localImg: "/photos/dates.webp",
               },
               {
                 id: "mock-4",
                 name: "Organic Roasted Cashew Nuts Premium",
                 price500g: 550,
                 price1kg: 1050,
-                localImg: "/photos/nuts-cashew-nuts-almonds.jpg",
+                localImg: "/photos/nuts-cashew-nuts-almonds.webp",
               },
             ].map((mockProd, i) => (
               <div
@@ -315,14 +338,14 @@ export default async function HomePage() {
                 name: "Khati Sundarban Khalisha Modhu",
                 price500g: 650,
                 price1kg: 1200,
-                localImg: "/photos/category-honey.jpg",
+                localImg: "/photos/category-honey.webp",
               },
               {
                 id: "honey-m2",
                 name: "Premium Black Seed Flower Honey",
                 price500g: 750,
                 price1kg: 1400,
-                localImg: "/photos/category-honey.jpg",
+                localImg: "/photos/category-honey.jwebp",
               },
             ].map((mockProd) => (
               <div
@@ -391,14 +414,14 @@ export default async function HomePage() {
                 name: "Premium Roasted Cashew Nuts",
                 price500g: 550,
                 price1kg: 1050,
-                localImg: "/photos/nuts-cashew-nuts-almonds.jpg",
+                localImg: "/photos/nuts-cashew-nuts-almonds.webp",
               },
               {
                 id: "nut-m2",
                 name: "Premium Quality California Almonds",
                 price500g: 500,
                 price1kg: 950,
-                localImg: "/photos/nuts-cashew-nuts-almonds.jpg",
+                localImg: "/photos/nuts-cashew-nuts-almonds.webp",
               },
             ].map((mockProd) => (
               <div
@@ -462,14 +485,14 @@ export default async function HomePage() {
                 name: "Khati Sorishar Tel (Wooden Pressed)",
                 price500g: 220,
                 price1kg: 400,
-                localImg: "/mustard-oil.jpg",
+                localImg: "/mustard-oil.webp",
               },
               {
                 id: "oil-m2",
                 name: "Premium Extra Virgin Coconut Oil",
                 price500g: 450,
                 price1kg: 850,
-                localImg: "/mustard-oil.jpg",
+                localImg: "/mustard-oil.webp",
               },
             ].map((mockProd) => (
               <div

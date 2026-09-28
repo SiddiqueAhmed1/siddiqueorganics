@@ -23,3 +23,13 @@ body {
   background: #3b7a42;
   border-radius: 10px;
 }
+
+/* Hero slider progress bar */
+@keyframes hero-progress {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}

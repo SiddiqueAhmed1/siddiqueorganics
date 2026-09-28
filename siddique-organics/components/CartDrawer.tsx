@@ -12,6 +12,7 @@ import {
   type CartItem,
 } from "@/lib/cart";
 import { useCartDrawer } from "@/components/CartDrawerContext";
+import { useScrollLock } from "@/lib/useScrollLock";
 
 const DELIVERY_CHARGE = 100;
 
@@ -32,18 +33,16 @@ export default function CartDrawer() {
     };
   }, []);
 
+  useScrollLock(isOpen);
+
   useEffect(() => {
     // Intentional: drives the enter/exit slide transition off the
     // isOpen prop (a rAF-timed state flip, not a value derivable from
     // props/state during render), plus a DOM side effect (scroll lock).
     /* eslint-disable react-hooks/set-state-in-effect */
     if (isOpen) {
-      document.body.style.overflow = "hidden";
       const raf = requestAnimationFrame(() => setSlidIn(true));
-      return () => {
-        cancelAnimationFrame(raf);
-        document.body.style.overflow = "";
-      };
+      return () => cancelAnimationFrame(raf);
     }
     setSlidIn(false);
     /* eslint-enable react-hooks/set-state-in-effect */
@@ -91,6 +90,17 @@ export default function CartDrawer() {
                 key={`${item.id}-${item.weight}`}
                 className="flex items-start justify-between gap-3 border-b border-[#F9F8F3] pb-4"
               >
+                {item.image && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={item.image}
+                    alt={item.name}
+                    width={56}
+                    height={56}
+                    loading="lazy"
+                    className="w-14 h-14 rounded-lg object-cover bg-[#F9F8F3] shrink-0"
+                  />
+                )}
                 <div className="flex-1">
                   <p className="font-bold text-[#0E3A24] text-sm">
                     {item.name}

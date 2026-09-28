@@ -13,7 +13,7 @@ export default function Footer() {
               width={170}
               height={200}
               className="mix-blend-multiply"
-              src="/photos/header-logo.jpg"
+              src="/photos/siddique-organics-logo.webp"
               alt="footer logo"
             />
 

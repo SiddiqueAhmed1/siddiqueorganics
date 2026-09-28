@@ -10,7 +10,12 @@ export interface CartItem {
   price: number;
   weight: string;
   quantity: number;
+  /** Optional so carts saved before this field existed still load. */
+  image?: string;
 }
+
+/** Must match MAX_QUANTITY_PER_ITEM in actions/order.actions.ts */
+export const MAX_QTY_PER_ITEM = 5;
 
 const CART_KEY = "siddique_cart";
 export const CART_SYNC_EVENT = "siddique_cart_sync";
@@ -43,8 +48,13 @@ export function addToCart(item: Omit<CartItem, "quantity">, quantity = 1) {
     (c) => c.id === item.id && c.weight === item.weight,
   );
 
-  if (existing) existing.quantity += quantity;
-  else cart.push({ ...item, quantity });
+  if (existing) {
+    existing.quantity = Math.min(MAX_QTY_PER_ITEM, existing.quantity + quantity);
+    // Backfill the image for lines saved before images were tracked.
+    if (!existing.image && item.image) existing.image = item.image;
+  } else {
+    cart.push({ ...item, quantity: Math.min(MAX_QTY_PER_ITEM, quantity) });
+  }
 
   saveCart(cart);
 }
@@ -59,7 +69,9 @@ export function updateQuantity(id: string, weight: string, quantity: number) {
   }
   saveCart(
     cart.map((c) =>
-      c.id === id && c.weight === weight ? { ...c, quantity } : c,
+      c.id === id && c.weight === weight
+        ? { ...c, quantity: Math.min(MAX_QTY_PER_ITEM, quantity) }
+        : c,
     ),
   );
 }

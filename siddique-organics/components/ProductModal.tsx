@@ -1,10 +1,12 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import Image from "next/image";
 import { X } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { addToCart, setExpressCheckoutItem } from "@/lib/cart";
+import { addToCart } from "@/lib/cart";
+import { useScrollLock } from "@/lib/useScrollLock";
 import { flyToCart } from "@/lib/flyToCart";
 import { useCartDrawer } from "@/components/CartDrawerContext";
 
@@ -34,7 +36,18 @@ export default function ProductModal({
   const [selectedWeight, setSelectedWeight] = useState<Weight>("1kg");
   const imageRef = useRef<HTMLImageElement>(null);
 
-  if (!isOpen) return null;
+  // Issue 4: freeze the page behind the modal while it is open.
+  useScrollLock(isOpen);
+
+  // Close on Escape.
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [isOpen, onClose]);
+
+  if (!isOpen || typeof document === "undefined") return null;
 
   const selectedPrice =
     selectedWeight === "500g" ? product.price500g : product.price1kg;
@@ -44,6 +57,7 @@ export default function ProductModal({
     name: product.name,
     price: selectedPrice,
     weight: selectedWeight,
+    image: product.image,
   });
 
   const handleAddToCart = () => {
@@ -53,22 +67,23 @@ export default function ProductModal({
     openDrawer();
   };
 
-  // "Buy Now" is an express, single-item checkout — it must NOT touch
-  // the customer's saved cart. The item lives in sessionStorage only,
-  // for the checkout page to read and clear once used.
+  // Issues 1 & 2: "Buy Now" adds to the real cart (merging with what is
+  // already there), then goes to checkout, which shows the whole cart.
   const handleBuyNow = () => {
-    setExpressCheckoutItem(buildItem());
+    addToCart(buildItem());
     onClose();
     router.push("/checkout");
   };
 
-  return (
+  return createPortal(
     <div
-      className="fixed overflow-hidden inset-0 z-[100] flex items-center justify-center bg-black/50 px-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 px-4 overscroll-contain touch-none"
       onClick={onClose}
+      role="dialog"
+      aria-modal="true"
     >
       <div
-        className="w-full max-w-sm bg-white rounded-2xl shadow-2xl overflow-hidden"
+        className="w-full max-w-sm max-h-[92dvh] overflow-y-auto overscroll-contain touch-auto bg-white rounded-2xl shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -105,8 +120,8 @@ export default function ProductModal({
             <div className="grid grid-cols-2 gap-3">
               {(
                 [
-                  { weight: "500g" as Weight, price: product.price500g },
                   { weight: "1kg" as Weight, price: product.price1kg },
+                  { weight: "500g" as Weight, price: product.price500g },
                 ] as const
               ).map((option) => (
                 <button
@@ -146,6 +161,7 @@ export default function ProductModal({
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

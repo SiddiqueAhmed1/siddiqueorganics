@@ -2,11 +2,15 @@
 
 import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import {
   getCart,
-  getExpressCheckoutItem,
-  clearExpressCheckoutItem,
+  updateQuantity,
+  removeFromCart,
   removeAllByProductId,
+  clearExpressCheckoutItem,
+  CART_SYNC_EVENT,
+  MAX_QTY_PER_ITEM,
   type CartItem,
 } from "@/lib/cart";
 import { submitCustomerOrder } from "@/actions/order.actions";
@@ -16,7 +20,6 @@ const DELIVERY_CHARGE = 100;
 export default function CheckoutPage() {
   const router = useRouter();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [isExpress, setIsExpress] = useState(false);
   const [hydrated, setHydrated] = useState(false);
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
@@ -29,16 +32,21 @@ export default function CheckoutPage() {
     // server), so this intentionally syncs state from an effect to
     // avoid a server/client hydration mismatch.
     /* eslint-disable react-hooks/set-state-in-effect */
-    const expressItem = getExpressCheckoutItem();
-    if (expressItem) {
-      setCart([expressItem]);
-      setIsExpress(true);
-    } else {
-      setCart(getCart());
-      setIsExpress(false);
-    }
+    // Drop any leftover single-item "express" entry from older builds so
+    // it can never hijack checkout again. Checkout ALWAYS shows the cart.
+    clearExpressCheckoutItem();
+    const sync = () => setCart(getCart());
+    sync();
     setHydrated(true);
     /* eslint-enable react-hooks/set-state-in-effect */
+
+    // Stay live when quantities change (here, in the drawer, other tabs).
+    window.addEventListener(CART_SYNC_EVENT, sync);
+    window.addEventListener("storage", sync);
+    return () => {
+      window.removeEventListener(CART_SYNC_EVENT, sync);
+      window.removeEventListener("storage", sync);
+    };
   }, []);
 
   const subtotal = cart.reduce(
@@ -78,13 +86,8 @@ export default function CheckoutPage() {
         // invalid (deleted/out of stock), remove just that line instead
         // of leaving the customer stuck.
         if (result.invalidItemId) {
-          if (isExpress) {
-            clearExpressCheckoutItem();
-            setCart([]);
-          } else {
-            removeAllByProductId(result.invalidItemId);
-            setCart(getCart());
-          }
+          removeAllByProductId(result.invalidItemId);
+          setCart(getCart());
         }
         setError(result.message);
         return;
@@ -97,14 +100,8 @@ export default function CheckoutPage() {
         JSON.stringify(result.data),
       );
 
-      if (isExpress) {
-        // Express checkout never touched the saved cart — just clear
-        // the one-time express item.
-        clearExpressCheckoutItem();
-      } else {
-        localStorage.removeItem("siddique_cart");
-        window.dispatchEvent(new Event("siddique_cart_sync"));
-      }
+      localStorage.removeItem("siddique_cart");
+      window.dispatchEvent(new Event("siddique_cart_sync"));
 
       router.push("/order-success");
     });
@@ -191,36 +188,87 @@ export default function CheckoutPage() {
           </div>
         </section>
 
-        {/* Order Summary (read-only — edit quantities from the cart drawer) */}
+        {/* Order Summary — every cart line with image, price and +/- controls */}
         <section className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 order-1 lg:order-2 h-fit">
           <div className="flex items-center justify-between mb-5">
             <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24]">
               Order Summary
             </h2>
-            {isExpress && (
-              <span className="text-[10px] font-extrabold px-2 py-1 rounded-full bg-amber-100 text-amber-700">
-                Express Checkout
-              </span>
-            )}
+            <span className="text-xs font-bold text-[#0E3A24]/50">
+              {cart.reduce((n, i) => n + i.quantity, 0)} items
+            </span>
           </div>
 
-          <div className="space-y-3 max-h-80 overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[26rem] overflow-y-auto overscroll-contain pr-1">
             {cart.map((item) => (
               <div
                 key={`${item.id}-${item.weight}`}
-                className="flex items-center justify-between gap-3 border-b border-[#F9F8F3] pb-3"
+                className="flex items-center gap-3 border-b border-[#F9F8F3] pb-3"
               >
-                <div>
-                  <p className="font-bold text-[#0E3A24] text-sm">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-[#F9F8F3] overflow-hidden flex items-center justify-center">
+                  {item.image ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      width={80}
+                      height={80}
+                      loading="lazy"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <ShoppingBag className="w-6 h-6 text-[#0E3A24]/30" />
+                  )}
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <p className="font-bold text-[#0E3A24] text-sm line-clamp-2 leading-tight">
                     {item.name}
                   </p>
-                  <p className="text-xs text-[#0E3A24]/50 font-semibold">
-                    {item.weight} × {item.quantity}
+                  <p className="text-xs text-[#0E3A24]/50 font-semibold mt-0.5">
+                    {item.weight} · ৳{item.price} each
                   </p>
+                  <div className="flex items-center gap-2 mt-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateQuantity(item.id, item.weight, item.quantity - 1)
+                      }
+                      className="w-7 h-7 rounded-lg border border-[#0E3A24]/20 flex items-center justify-center hover:bg-[#F9F8F3] transition-colors"
+                      aria-label="Decrease quantity"
+                    >
+                      <Minus className="w-3.5 h-3.5" />
+                    </button>
+                    <span className="w-6 text-center text-sm font-bold text-[#0E3A24]">
+                      {item.quantity}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() =>
+                        updateQuantity(item.id, item.weight, item.quantity + 1)
+                      }
+                      disabled={item.quantity >= MAX_QTY_PER_ITEM}
+                      className="w-7 h-7 rounded-lg border border-[#0E3A24]/20 flex items-center justify-center hover:bg-[#F9F8F3] disabled:opacity-30 transition-colors"
+                      aria-label="Increase quantity"
+                    >
+                      <Plus className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
-                <p className="font-extrabold text-[#6C4E31] text-sm whitespace-nowrap">
-                  ৳{item.price * item.quantity}
-                </p>
+
+                <div className="flex flex-col items-end justify-between self-stretch gap-2">
+                  <p className="font-extrabold text-[#6C4E31] text-sm whitespace-nowrap">
+                    ৳{item.price * item.quantity}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => removeFromCart(item.id, item.weight)}
+                    className="text-red-500 hover:text-red-700 transition-colors"
+                    aria-label="Remove item"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
               </div>
             ))}
           </div>
