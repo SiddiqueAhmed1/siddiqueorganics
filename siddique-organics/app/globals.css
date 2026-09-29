@@ -33,3 +33,9 @@ body {
     transform: scaleX(1);
   }
 }
+
+/* Product page has a sticky bottom buy bar — keep the footer's copyright
+   line from being hidden underneath it. */
+body:has(#sticky-buy-bar) footer {
+  padding-bottom: 5rem;
+}

@@ -1,11 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useId, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import { useRouter } from "next/navigation";
 import { Loader2, Search, X } from "lucide-react";
 import { searchProducts, type SearchResult } from "@/actions/search.actions";
-
-const ProductModal = dynamic(() => import("@/components/ProductModal"));
 
 interface SearchBarProps {
   placeholder: string;
@@ -18,6 +16,7 @@ export default function SearchBar({
   className = "",
   inputClassName = "",
 }: SearchBarProps) {
+  const router = useRouter();
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
   const reqId = useRef(0);
@@ -27,7 +26,6 @@ export default function SearchBar({
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [active, setActive] = useState(-1);
-  const [selected, setSelected] = useState<SearchResult | null>(null);
 
   // Debounced search (300ms). `reqId` drops out-of-order responses.
   useEffect(() => {
@@ -69,10 +67,16 @@ export default function SearchBar({
     };
   }, []);
 
-  const pick = useCallback((r: SearchResult) => {
-    setSelected(r);
-    setOpen(false);
-  }, []);
+  // Picking a result opens the single product page (no modal).
+  const pick = useCallback(
+    (r: SearchResult) => {
+      setOpen(false);
+      setQuery("");
+      setResults([]);
+      router.push(`/products/${r.slug}`);
+    },
+    [router],
+  );
 
   const onKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === "Escape") return setOpen(false);
@@ -183,20 +187,6 @@ export default function SearchBar({
             </li>
           )}
         </ul>
-      )}
-
-      {selected && (
-        <ProductModal
-          isOpen
-          onClose={() => setSelected(null)}
-          product={{
-            id: selected.id,
-            name: selected.name,
-            price500g: selected.price500g,
-            price1kg: selected.price1kg,
-            image: selected.image ?? "/placeholder.png",
-          }}
-        />
       )}
     </div>
   );

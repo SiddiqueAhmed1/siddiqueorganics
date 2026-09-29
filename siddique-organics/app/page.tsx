@@ -80,11 +80,14 @@ export default async function HomePage() {
     <div
       key={product.id}
       data-product-card
-      className={`group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
-        rank ? "border-2 border-amber-400/50" : "border border-[#0E3A24]/5"
+      className={`group rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
+        rank ? "border-2 border-amber-400/50" : "border border-[#0E3A24]/9"
       }`}
     >
-      <div className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4">
+      <Link
+        href={`/products/${product.slug}`}
+        className="block w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
+      >
         {product.images && product.images.length > 0 ? (
           <Image
             src={product.images[0]}
@@ -108,7 +111,7 @@ export default async function HomePage() {
             #{rank} Best Seller
           </span>
         )}
-      </div>
+      </Link>
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
         <div className="space-y-1">
           <div className="flex items-center gap-0.5 text-amber-500">
@@ -116,9 +119,11 @@ export default async function HomePage() {
               <Star key={i} className="w-3 h-3 fill-current" />
             ))}
           </div>
-          <h3 className="font-bold text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight">
-            {product.name}
-          </h3>
+          <Link href={`/products/${product.slug}`}>
+            <h3 className="font-bold text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
+              {product.name}
+            </h3>
+          </Link>
         </div>
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 border-t border-[#F9F8F3] pt-2">
@@ -406,7 +411,7 @@ export default async function HomePage() {
         </div>
         {products.filter((p) => p.category === "nuts" || p.category === "nut")
           .length === 0 ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid  grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
               {
                 id: "nut-m1",
