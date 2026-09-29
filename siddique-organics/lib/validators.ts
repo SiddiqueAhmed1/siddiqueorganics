@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-//
 export const orderFormSchema = z.object({
   customerName: z.string().min(3).max(50),
 
@@ -10,8 +9,9 @@ export const orderFormSchema = z.object({
 
   productId: z.string().cuid("Invalid Id"),
 
+  // errorMap replace with invalid_type_error
   weight: z.enum(["500g", "1kg"], {
-    errorMap: () => ({ message: "Please choose correct weight" }),
+    message: "Please choose correct weight",
   }),
 
   quantity: z
@@ -21,5 +21,4 @@ export const orderFormSchema = z.object({
     .max(5, "Maximum 5 products can take in single order"),
 });
 
-//
 export type OrderFormInput = z.infer<typeof orderFormSchema>;

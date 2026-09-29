@@ -12,11 +12,10 @@ export const revalidate = 60;
 // Left banner slides. Add / reorder / swap images here — any file in /public.
 const HERO_SLIDES = [
   {
-    src: "/siddique-organics-sundarban-honey-raw-honey-pure-honey-healthy-lifestyle-khati-modhu-honey.webp",
+    src: "/photos/siddique-organics-sundarban-honey-raw-honey-pure-honey-healthy-lifestyle-khati-modhu-honey.webp",
     alt: "Siddique Organics Sundarban pure honey",
   },
   { src: "/photos/siddique-organics-banner2.webp", alt: "Pure raw honey" },
-  { src: "/photos/nuts-cashew-nuts-almonds.webp", alt: "Organic nuts" },
 ];
 
 interface ProductData {
@@ -165,7 +164,7 @@ export default async function HomePage() {
       {/* 2. DYNAMIC PRESETS SHOP BY CATEGORY CARD UI GRID */}
       <section className="space-y-4">
         <div className="border-b border-[#0E3A24]/10 pb-3">
-          <h2 className="text-base sm:text-xl font-extrabold text-[#0E3A24] uppercase tracking-wide font-serif">
+          <h2 className="text-base sm:text-xl font-extrabold text-[#0E3A24] uppercase tracking-wide">
             Shop by Category
           </h2>
         </div>
@@ -179,7 +178,7 @@ export default async function HomePage() {
             {
               name: "Premium Oils",
               slug: "oil",
-              localImg: "/mustard-oil.webp",
+              localImg: "/photos/mustard-oil.webp",
             },
             { name: "Dates", slug: "dates", localImg: "/photos/dates.webp" },
             {
@@ -248,7 +247,7 @@ export default async function HomePage() {
                 name: "Extra Virgin Wooden Pressed Mustard Oil",
                 price500g: 220,
                 price1kg: 400,
-                localImg: "/mustard-oil.webp",
+                localImg: "/photos/mustard-oil.webp",
               },
               {
                 id: "mock-3",
@@ -485,14 +484,14 @@ export default async function HomePage() {
                 name: "Khati Sorishar Tel (Wooden Pressed)",
                 price500g: 220,
                 price1kg: 400,
-                localImg: "/mustard-oil.webp",
+                localImg: "/photos/mustard-oil.webp",
               },
               {
                 id: "oil-m2",
                 name: "Premium Extra Virgin Coconut Oil",
                 price500g: 450,
                 price1kg: 850,
-                localImg: "/mustard-oil.webp",
+                localImg: "/photos/mustard-oil.webp",
               },
             ].map((mockProd) => (
               <div

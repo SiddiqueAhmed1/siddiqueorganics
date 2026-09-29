@@ -29,6 +29,7 @@ const hindSiliguri = Hind_Siliguri({
 export const metadata: Metadata = {
   title: "Siddique Organics",
   description: "ভালো খান, সুস্থ থাকুন",
+  manifest: "/manifest.json",
 };
 
 export default function RootLayout({
@@ -52,7 +53,7 @@ export default function RootLayout({
                   className="flex items-center group relative w-full h-full mix-blend-multiply"
                 >
                   <Image
-                    src="/photos/siddique-organics-logo.webp"
+                    src="/photos/header-logo.webp"
                     alt="Siddique Organics"
                     width={150}
                     height={120}
@@ -70,7 +71,7 @@ export default function RootLayout({
               />
 
               {/* 3. Right Viewport: Fully Functional Fixed BG Utility Action Controllers */}
-              <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0">
+              <div className="flex items-center gap-1 sm:gap-4 flex-shrink-0 lg:  mr-4">
                 {/* Call Support CTA with Hardcoded Hex Fallbacks */}
                 <a
                   href="tel:01774112721"
