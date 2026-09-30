@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #f6f2e8; /* premium soft cream page background */
+  --background: #fbf9f5; /* premium soft cream page background */
   --foreground: #0e3a24;
 }
 
@@ -17,7 +17,7 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f6f2e8;
+  background: #fbf9f5;
 }
 ::-webkit-scrollbar-thumb {
   background: #3b7a42;

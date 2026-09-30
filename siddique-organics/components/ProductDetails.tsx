@@ -92,7 +92,7 @@ export default function ProductDetails({
   };
 
   const whatsappHref = `https://wa.me/${SITE.whatsappNumber}?text=${encodeURIComponent(
-    `Hello, I want to order: ${product.name} (${weight}) x ${quantity}`,
+    `Hello, I want to order: ${product.name} (${weight}) x${quantity}`,
   )}`;
 
   const goBack = () => {
@@ -163,7 +163,7 @@ export default function ProductDetails({
         </div>
 
         {/* Rounded cream sheet */}
-        <div className="relative -mt-7 rounded-t-[2rem] bg-[#F6F2E8] px-5 pt-6 pb-6 shadow-[0_-10px_30px_rgba(14,58,36,0.07)] space-y-5">
+        <div className="relative -mt-7 rounded-t-[2rem] bg-[#F9F9F9] px-5 pt-6 pb-6 shadow-[0_-10px_30px_rgba(14,58,36,0.07)] space-y-5">
           <div className="flex items-start justify-between gap-3">
             <h1 className="text-xl font-extrabold leading-tight text-[#0E3A24]">
               {product.name}
@@ -223,10 +223,10 @@ export default function ProductDetails({
                 key={o.w}
                 type="button"
                 onClick={() => setWeight(o.w)}
-                className={`rounded-2xl border-2 py-3 text-center transition-colors ${
+                className={`rounded-xl border-2 py-2.5 text-center transition-all cursor-pointer ${
                   weight === o.w
-                    ? "border-[#0E3A24] bg-white shadow-sm"
-                    : "border-[#0E3A24]/10 bg-white/60"
+                    ? "border-[#3B7A42] bg-[#3B7A42]/15 shadow-[0_4px_14px_rgba(59,122,66,0.18)]"
+                    : "border-[#3B7A42]/20 bg-[#3B7A42]/5 hover:bg-[#3B7A42]/10"
                 }`}
               >
                 <p className="text-sm font-extrabold text-[#0E3A24]">{o.w}</p>
@@ -416,10 +416,10 @@ export default function ProductDetails({
                   key={o.w}
                   type="button"
                   onClick={() => setWeight(o.w)}
-                  className={`rounded-xl border-2 px-5 py-2.5 text-center transition-colors ${
+                  className={`rounded-xl border-2 px-5 py-2 text-center transition-all ${
                     weight === o.w
-                      ? "border-[#0E3A24] bg-[#0E3A24]/5"
-                      : "border-[#0E3A24]/10 hover:border-[#0E3A24]/30"
+                      ? "border-[#3B7A42] bg-[#3B7A42]/15 shadow-[0_4px_14px_rgba(59,122,66,0.18)]"
+                      : "border-[#3B7A42]/20 bg-[#3B7A42]/5 hover:bg-[#3B7A42]/10"
                   }`}
                 >
                   <p className="font-extrabold text-[#0E3A24] text-sm">{o.w}</p>

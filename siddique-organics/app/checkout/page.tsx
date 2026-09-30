@@ -122,7 +122,7 @@ export default function CheckoutPage() {
   }
 
   return (
-    <main className="min-h-screen bg-[#F6F2E8] px-4 sm:px-6 py-8 sm:py-12">
+    <main className="min-h-screen bg-[#FBF9F5] px-4 sm:px-6 py-8 sm:py-12">
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
         {/* Delivery Info Form */}
         <section className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 order-2 lg:order-1">
