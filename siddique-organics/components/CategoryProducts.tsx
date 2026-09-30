@@ -18,7 +18,7 @@ type WeightFilter = "all" | "500g" | "1kg";
 type StockFilter = "all" | "in" | "out";
 type Sort = "default" | "low" | "high";
 
-const bnFont = { fontFamily: "var(--font-hind), sans-serif" };
+const bnFont = { fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif" };
 
 export default function CategoryProducts({
   products,

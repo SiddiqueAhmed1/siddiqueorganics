@@ -11,13 +11,13 @@ import MobileBottomNav from "@/components/MobileBottomNav";
 import HeaderCartButton from "@/components/HeaderCartButton";
 import SearchBar from "@/components/SearchBar";
 import { CartDrawerProvider } from "@/components/CartDrawerContext";
-import { Playfair_Display, Hind_Siliguri } from "next/font/google";
+import { Open_Sans, Hind_Siliguri } from "next/font/google";
 
 // 1. Configure the premium typography profiles at the top layout scope
-const playfair = Playfair_Display({
+const openSans = Open_Sans({
   subsets: ["latin"],
-  variable: "--font-playfair",
-  weight: ["400", "600", "700", "800"],
+  variable: "--font-open-sans",
+  weight: ["400", "500", "600", "700", "800"],
   display: "swap",
 });
 
@@ -42,7 +42,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${playfair.variable} ${hindSiliguri.variable} antialiased min-h-screen bg-[#FBF9F5] font-sans`}
+        className={`${openSans.variable} ${hindSiliguri.variable} antialiased min-h-screen bg-[#FBF9F5] font-sans`}
       >
         <CartDrawerProvider>
           {/* GLOBAL HEADER WITH NATURAL COMPLEMENTARY BG */}

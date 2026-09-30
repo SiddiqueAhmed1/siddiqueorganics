@@ -1,8 +1,7 @@
 "use client";
-import { useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { LayoutDashboard, Package, Users, Boxes, UserRound, LogOut, Menu, X } from "lucide-react";
+import { LayoutDashboard, Package, Users, Boxes, UserRound, LogOut, X } from "lucide-react";
 import { logoutEmployee } from "@/actions/auth.actions";
 
 const NAV = [
@@ -13,8 +12,7 @@ const NAV = [
   { href: "/admin/profile", label: "Profile", icon: UserRound, soon: true },
 ];
 
-export default function Sidebar({ name, role }: { name: string; role: string }) {
-  const [open, setOpen] = useState(false);
+export default function Sidebar({ name, role, open, setOpen }: { name: string; role: string; open: boolean; setOpen: (v: boolean) => void }) {
   const path = usePathname();
   const router = useRouter();
   const active = (h: string) => (h === "/admin" ? path === h : path.startsWith(h));
@@ -23,10 +21,10 @@ export default function Sidebar({ name, role }: { name: string; role: string }) 
     <div className="flex h-full flex-col bg-[#0E3A24] text-white">
       <div className="flex h-16 items-center justify-between px-5 border-b border-white/10">
         <div>
-          <p className="text-lg font-bold leading-none font-[family-name:var(--font-playfair)]">Siddique Organics</p>
+          <p className="text-lg font-bold leading-none">Siddique Organics</p>
           <p className="mt-1 text-[10px] uppercase tracking-widest text-white/50">Admin Panel</p>
         </div>
-        <button onClick={() => setOpen(false)} className="lg:hidden p-1 text-white/70"><X className="h-5 w-5" /></button>
+        <button onClick={() => setOpen(false)} className="p-1 text-white/70" aria-label="Close sidebar"><X className="h-5 w-5" /></button>
       </div>
 
       <nav className="flex-1 space-y-1 overflow-y-auto p-3">
@@ -44,7 +42,7 @@ export default function Sidebar({ name, role }: { name: string; role: string }) 
               </div>
             );
           return (
-            <Link key={href} href={href} onClick={() => setOpen(false)} className={cls}>
+            <Link key={href} href={href} onClick={() => { if (window.innerWidth < 1024) setOpen(false); }} className={cls}>
               <Icon className="h-[18px] w-[18px]" />
               {label}
             </Link>
@@ -73,17 +71,11 @@ export default function Sidebar({ name, role }: { name: string; role: string }) 
 
   return (
     <>
-      <div className="sticky top-0 z-30 flex h-14 items-center gap-3 border-b border-[#0E3A24]/10 bg-white px-4 lg:hidden">
-        <button onClick={() => setOpen(true)} className="p-1 text-[#0E3A24]"><Menu className="h-6 w-6" /></button>
-        <span className="font-bold text-[#0E3A24] font-[family-name:var(--font-playfair)]">Siddique Organics</span>
-      </div>
-      <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 lg:block">{content}</aside>
-      {open && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <div className="absolute inset-0 bg-black/50" onClick={() => setOpen(false)} />
-          <aside className="absolute inset-y-0 left-0 w-64">{content}</aside>
-        </div>
-      )}
+      {/* Mobile backdrop */}
+      {open && <div className="fixed inset-0 z-40 bg-black/50 lg:hidden" onClick={() => setOpen(false)} />}
+      <aside className={`fixed inset-y-0 left-0 z-50 w-64 transition-transform duration-200 ${open ? "translate-x-0" : "-translate-x-full"}`}>
+        {content}
+      </aside>
     </>
   );
 }

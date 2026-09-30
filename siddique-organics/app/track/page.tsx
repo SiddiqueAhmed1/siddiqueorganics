@@ -54,7 +54,7 @@ export default function TrackOrderPage() {
       <div className="max-w-lg w-full">
         <div className="flex flex-col items-center text-center mb-8">
           <PackageSearch className="w-12 h-12 text-[#0E3A24] mb-3" />
-          <h1 className="text-xl sm:text-2xl font-extrabold text-[#0E3A24]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0E3A24]">
             Track Your Order
           </h1>
           <p className="text-sm text-[#0E3A24]/60 font-semibold mt-1">
@@ -108,7 +108,7 @@ export default function TrackOrderPage() {
                 <div className="space-y-2 border-t border-[#F9F8F3] pt-3">
                   {order.items.map((item, i) => (
                     <div key={i} className="flex justify-between text-sm">
-                      <span className="text-[#0E3A24] font-semibold">
+                      <span className="text-[#0E3A24] font-normal">
                         {item.product.name}{" "}
                         <span className="text-[#0E3A24]/50">
                           ({item.weight} × {item.quantity})

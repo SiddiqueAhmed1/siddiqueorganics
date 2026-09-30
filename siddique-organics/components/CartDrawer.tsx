@@ -67,7 +67,7 @@ export default function CartDrawer() {
         }`}
       >
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#0E3A24]/10">
-          <h2 className="font-extrabold text-[#0E3A24] text-lg flex items-center gap-2">
+          <h2 className="font-bold text-[#0E3A24] text-lg flex items-center gap-2">
             <ShoppingBag className="w-5 h-5" /> Your Cart ({totalItems})
           </h2>
           <button
@@ -102,7 +102,7 @@ export default function CartDrawer() {
                   />
                 )}
                 <div className="flex-1">
-                  <p className="font-bold text-[#0E3A24] text-sm">
+                  <p className="font-normal text-[#0E3A24] text-sm">
                     {item.name}
                   </p>
                   <p className="text-xs text-[#0E3A24]/50 font-semibold mb-2">

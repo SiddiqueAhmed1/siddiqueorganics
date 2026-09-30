@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   images: {
+    remotePatterns: [{ protocol: "https", hostname: "res.cloudinary.com" }],
     // Smaller files than JPEG/PNG for the big product + banner photos.
     formats: ["image/avif", "image/webp"],
     // Optimised images are cached for 30 days instead of the 60s default.

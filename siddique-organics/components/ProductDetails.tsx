@@ -165,7 +165,7 @@ export default function ProductDetails({
         {/* Rounded cream sheet */}
         <div className="relative -mt-7 rounded-t-[2rem] bg-[#F9F9F9] px-5 pt-6 pb-6 shadow-[0_-10px_30px_rgba(14,58,36,0.07)] space-y-5">
           <div className="flex items-start justify-between gap-3">
-            <h1 className="text-xl font-extrabold leading-tight text-[#0E3A24]">
+            <h1 className="text-xl font-normal leading-tight text-[#0E3A24]">
               {product.name}
             </h1>
             <span
@@ -239,7 +239,7 @@ export default function ProductDetails({
 
           {/* Description */}
           <div className="border-t border-[#0E3A24]/10 pt-4">
-            <h2 className="mb-2 text-base font-extrabold text-[#0E3A24]">
+            <h2 className="mb-2 text-base font-bold text-[#0E3A24]">
               Description
             </h2>
             {product.description?.trim() ? (
@@ -374,7 +374,7 @@ export default function ProductDetails({
             <span className="inline-block text-[11px] font-extrabold uppercase tracking-wider text-[#3B7A42] bg-[#3B7A42]/10 px-2.5 py-1 rounded-full">
               {product.category}
             </span>
-            <h1 className="text-xl sm:text-3xl font-extrabold text-[#0E3A24] leading-tight">
+            <h1 className="text-xl sm:text-3xl font-normal text-[#0E3A24] leading-tight">
               {product.name}
             </h1>
           </div>

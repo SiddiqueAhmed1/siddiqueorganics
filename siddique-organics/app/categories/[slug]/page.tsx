@@ -55,7 +55,7 @@ export default async function CategoryPage({ params }: Props) {
   if (!category) notFound();
 
   const products = await getProducts(slug);
-  const bnFont = { fontFamily: "var(--font-hind), sans-serif" };
+  const bnFont = { fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif" };
 
   return (
     <div className="w-full space-y-6 pb-10">
@@ -70,7 +70,7 @@ export default async function CategoryPage({ params }: Props) {
 
       {/* Title */}
       <div className="border-b border-[#0E3A24]/10 pb-3">
-        <h1 className="text-lg sm:text-2xl font-extrabold text-[#0E3A24] uppercase tracking-wide">
+        <h1 className="text-lg sm:text-2xl font-bold text-[#0E3A24] uppercase tracking-wide">
           {category.name}
         </h1>
         <p className="text-sm text-[#3B7A42] font-bold" style={bnFont}>
@@ -104,7 +104,7 @@ export default async function CategoryPage({ params }: Props) {
 
           <div className="space-y-1">
             <h2
-              className="text-xl sm:text-2xl font-extrabold text-[#0E3A24]"
+              className="text-xl sm:text-2xl font-bold text-[#0E3A24]"
               style={bnFont}
             >
               দুঃখিত, এই মুহূর্তে স্টকে নেই

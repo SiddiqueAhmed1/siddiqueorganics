@@ -18,7 +18,7 @@ const config: Config = {
         },
       },
       fontFamily: {
-        sans: ["var(--font-geist-sans)", "sans-serif"],
+        sans: ["var(--font-open-sans)", "var(--font-hind)", "sans-serif"],
         mono: ["var(--font-geist-mono)", "monospace"],
       },
     },

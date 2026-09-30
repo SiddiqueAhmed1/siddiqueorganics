@@ -1,5 +1,5 @@
 import { getSession } from "@/lib/session";
-import Sidebar from "@/components/admin/Sidebar";
+import AdminShell from "@/components/admin/AdminShell";
 
 export const dynamic = "force-dynamic";
 
@@ -10,11 +10,8 @@ export default async function AdminLayout({
 }) {
   const s = await getSession();
   return (
-    <div className="min-h-screen bg-[#FBF9F5] text-[#0E3A24]">
-      <Sidebar name={s?.name ?? "User"} role={s?.role ?? "EMPLOYEE"} />
-      <main className="lg:pl-64">
-        <div className="mx-auto max-w-6xl p-4 sm:p-8">{children}</div>
-      </main>
-    </div>
+    <AdminShell name={s?.name ?? "User"} role={s?.role ?? "EMPLOYEE"}>
+      {children}
+    </AdminShell>
   );
 }

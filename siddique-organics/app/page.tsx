@@ -119,7 +119,7 @@ function SectionHeading({
 }) {
   return (
     <div className="flex items-end justify-between border-b border-[#0E3A24]/10 pb-3">
-      <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24] md:uppercase md:tracking-wide">
+      <h2 className="text-lg sm:text-xl font-bold text-[#0E3A24] md:uppercase md:tracking-wide">
         {title}
       </h2>
       {href && (
@@ -237,7 +237,7 @@ export default async function HomePage() {
                   />
                 </div>
                 <div className="pt-1 flex flex-col items-start">
-                  <h3 className="font-serif font-bold text-[#0E3A24] text-lg group-hover:text-[#3B7A42] transition-colors line-clamp-1">
+                  <h3 className="font-normal text-[#0E3A24] text-lg group-hover:text-[#3B7A42] transition-colors line-clamp-1">
                     {cat.name}
                   </h3>
                   <div className="mt-1.5 flex items-center gap-1 text-xs text-gray-500 font-medium transition-colors group-hover:text-[#3B7A42]">

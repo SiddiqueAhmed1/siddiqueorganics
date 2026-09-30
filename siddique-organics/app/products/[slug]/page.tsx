@@ -67,7 +67,7 @@ export default async function ProductPage({ params }: Props) {
       {/* Description */}
       <section className="hidden md:block rounded-2xl bg-white border border-[#0E3A24]/10 shadow-sm overflow-hidden">
         <div className="border-b border-[#0E3A24]/10 px-4 sm:px-8">
-          <h2 className="inline-block py-4 text-sm sm:text-base font-extrabold uppercase tracking-wide text-[#0E3A24] border-b-4 border-[#3B7A42] -mb-px">
+          <h2 className="inline-block py-4 text-sm sm:text-base font-bold uppercase tracking-wide text-[#0E3A24] border-b-4 border-[#3B7A42] -mb-px">
             Product Description
           </h2>
         </div>

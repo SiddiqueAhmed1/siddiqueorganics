@@ -51,7 +51,7 @@ export default function OrderSuccessPage() {
       <div className="max-w-lg w-full">
         <div className="flex flex-col items-center text-center mb-8">
           <CheckCircle2 className="w-16 h-16 text-[#3B7A42] mb-3" />
-          <h1 className="text-xl sm:text-2xl font-extrabold text-[#0E3A24]">
+          <h1 className="text-xl sm:text-2xl font-bold text-[#0E3A24]">
             Thank You for Your Order!
           </h1>
           <p className="text-sm text-[#0E3A24]/60 font-semibold mt-1">
@@ -61,7 +61,7 @@ export default function OrderSuccessPage() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 space-y-5">
           <div>
-            <h2 className="font-extrabold text-[#0E3A24] text-sm mb-3">
+            <h2 className="font-bold text-[#0E3A24] text-sm mb-3">
               Order Items
             </h2>
             <div className="space-y-3">

@@ -126,7 +126,7 @@ export default function CheckoutPage() {
       <div className="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10">
         {/* Delivery Info Form */}
         <section className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 order-2 lg:order-1">
-          <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24] mb-5">
+          <h2 className="text-lg sm:text-xl font-bold text-[#0E3A24] mb-5">
             Delivery Information
           </h2>
 
@@ -191,7 +191,7 @@ export default function CheckoutPage() {
         {/* Order Summary — every cart line with image, price and +/- controls */}
         <section className="bg-white rounded-2xl shadow-sm border border-[#0E3A24]/5 p-5 sm:p-7 order-1 lg:order-2 h-fit">
           <div className="flex items-center justify-between mb-5">
-            <h2 className="text-lg sm:text-xl font-extrabold text-[#0E3A24]">
+            <h2 className="text-lg sm:text-xl font-bold text-[#0E3A24]">
               Order Summary
             </h2>
             <span className="text-xs font-bold text-[#0E3A24]/50">
@@ -222,7 +222,7 @@ export default function CheckoutPage() {
                 </div>
 
                 <div className="flex-1 min-w-0">
-                  <p className="font-bold text-[#0E3A24] text-sm line-clamp-2 leading-tight">
+                  <p className="font-normal text-[#0E3A24] text-sm line-clamp-2 leading-tight">
                     {item.name}
                   </p>
                   <p className="text-xs text-[#0E3A24]/50 font-semibold mt-0.5">

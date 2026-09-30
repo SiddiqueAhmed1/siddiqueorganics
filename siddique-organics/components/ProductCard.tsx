@@ -83,7 +83,7 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-3 md:p-5">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-center md:text-left font-bold text-[#0E3A24] text-[13px] md:text-base leading-snug line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] group-hover:text-[#3B7A42] transition-colors">
+          <h3 className="text-center md:text-left font-normal text-[#0E3A24] text-[13px] md:text-base leading-snug line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] group-hover:text-[#3B7A42] transition-colors">
             {product.name}
           </h3>
         </Link>
@@ -165,7 +165,7 @@ export function ClassicProductCard({
             ))}
           </div>
           <Link href={`/products/${product.slug}`}>
-            <h3 className="font-bold text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
+            <h3 className="font-normal text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
               {product.name}
             </h3>
           </Link>

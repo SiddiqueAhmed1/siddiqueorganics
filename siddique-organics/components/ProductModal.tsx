@@ -88,7 +88,7 @@ export default function ProductModal({
       >
         {/* Header */}
         <div className="flex items-center justify-between px-5 py-4 border-b border-[#0E3A24]/10">
-          <h2 className="font-extrabold text-[#0E3A24] text-base sm:text-lg pr-2">
+          <h2 className="font-normal text-[#0E3A24] text-base sm:text-lg pr-2">
             {product.name}
           </h2>
           <button

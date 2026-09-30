@@ -27,7 +27,7 @@ export async function createProduct(
     const price500gStr = formData.get("price500g") as string | null;
     const price1kgStr = formData.get("price1kg") as string | null;
     const stockStr = formData.get("stock") as string | null;
-    const imageUrl = formData.get("imageUrl") as string | null;
+    const images = formData.getAll("images").map(String).filter((u) => u.startsWith("https://res.cloudinary.com/"));
 
     if (
       !name ||
@@ -64,7 +64,7 @@ export async function createProduct(
         price500g,
         price1kg,
         stock,
-        images: imageUrl ? [imageUrl.trim()] : [],
+        images,
       },
     });
 
@@ -104,6 +104,7 @@ export async function updateProduct(
       price500g?: number;
       price1kg?: number;
       stock?: number;
+      images?: string[];
     };
 
     const dataToUpdate: ProductUpdatePayload = {};
@@ -122,6 +123,8 @@ export async function updateProduct(
       const stk = parseInt(stockStr, 10);
       if (!isNaN(stk)) dataToUpdate.stock = stk;
     }
+
+    dataToUpdate.images = formData.getAll("images").map(String).filter((u) => u.startsWith("https://res.cloudinary.com/") || u.startsWith("/"));
 
     await prisma.product.update({
       where: { id },

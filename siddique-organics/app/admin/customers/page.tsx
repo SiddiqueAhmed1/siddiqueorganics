@@ -14,7 +14,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
     return (
       <div className="space-y-6">
         <Link href="/admin/customers" className="text-sm text-[#3B7A42]">← All customers</Link>
-        <h1 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">{orders[0]?.customerName ?? phone}</h1>
+        <h1 className="text-2xl font-bold">{orders[0]?.customerName ?? phone}</h1>
         <p className="text-sm text-[#0E3A24]/70">{phone} · {orders[0]?.address}</p>
         <div className="rounded-xl bg-white border border-[#0E3A24]/10 overflow-x-auto">
           <table className="w-full text-sm">
@@ -43,7 +43,7 @@ export default async function CustomersPage({ searchParams }: { searchParams: Pr
   const names = new Map(latest.map((l) => [l.phone, l.customerName]));
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold font-[family-name:var(--font-playfair)]">Customers ({stats.length})</h1>
+      <h1 className="text-2xl font-bold">Customers ({stats.length})</h1>
       <div className="rounded-xl bg-white border border-[#0E3A24]/10 overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-[#0E3A24] text-white text-left"><tr>{["Name", "Phone", "Orders", "Total spent", "Last order", ""].map((h) => <th key={h} className="px-4 py-2">{h}</th>)}</tr></thead>

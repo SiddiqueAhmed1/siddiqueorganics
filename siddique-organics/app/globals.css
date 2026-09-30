@@ -1,5 +1,9 @@
 @import "tailwindcss";
 
+@theme inline {
+  --font-sans: var(--font-open-sans), var(--font-hind), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
   --background: #fbf9f5; /* premium soft cream page background */
   --foreground: #0e3a24;
@@ -8,7 +12,7 @@
 body {
   color: var(--foreground);
   background-color: var(--background);
-  font-family: var(--font-geist-sans), sans-serif;
+  font-family: var(--font-open-sans), var(--font-hind), sans-serif;
   overflow-x: hidden;
 }
 
