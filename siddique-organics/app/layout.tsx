@@ -57,7 +57,7 @@ export default function RootLayout({
                     alt="Siddique Organics"
                     width={150}
                     height={120}
-                    className="h-auto w-[108px] min-[400px]:w-[140px] sm:w-[150px] object-contain object-left "
+                    className="h-auto hidden w-[108px] min-[400px]:w-[140px] sm:w-[150px] object-contain object-left "
                     priority
                   />
                 </Link>
@@ -87,7 +87,7 @@ export default function RootLayout({
                   className="flex items-center justify-center gap-1 p-2 rounded-full text-[#0E3A24] hover:bg-[#0E3A24]/5 transition-colors group relative"
                   title="Track Active Order"
                 >
-                  <ShoppingBag className="w-5 h-5 sm:w-6 h-6 text-[#0E3A24]" />
+                  <ShoppingBag className="w-5 h-5 sm:w-6 text-[#0E3A24]" />
                   <span className="hidden lg:inline text-xs font-semibold ml-0.5">
                     Track
                   </span>

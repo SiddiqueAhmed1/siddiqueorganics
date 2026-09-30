@@ -80,13 +80,13 @@ export default async function HomePage() {
     <div
       key={product.id}
       data-product-card
-      className={`group rounded-2xl bg-white shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
+      className={`group rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
         rank ? "border-2 border-green-800/30" : "border border-green-800/20"
       }`}
     >
       <Link
         href={`/products/${product.slug}`}
-        className="block w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
+        className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
       >
         {product.images && product.images.length > 0 ? (
           <Image
