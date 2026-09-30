@@ -173,54 +173,67 @@ export default async function HomePage() {
             Shop by Category
           </h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3 sm:gap-4">
           {[
             {
               name: "Pure Honey",
               slug: "honey",
-              localImg: "/photos/category-honey.webp",
+              localImg: "/category/siddique-organics-honey.webp",
             },
             {
               name: "Premium Oils",
               slug: "oil",
-              localImg: "/photos/mustard-oil.webp",
+              localImg: "/category/siddique-organics-mustard-oil.webp",
             },
-            { name: "Dates", slug: "dates", localImg: "/photos/dates.webp" },
+            {
+              name: "Dates",
+              slug: "dates",
+              localImg: "/category/siddique-organics-dates.webp",
+            },
             {
               name: "Organic Nuts",
               slug: "nuts",
-              localImg: "/photos/nuts-cashew-nuts-almonds.webp",
+              localImg: "/category/siddique-organics-cashew-almonds.webp",
             },
             {
               name: "Healthy Seeds",
               slug: "seeds",
-              localImg: "/photos/organics-seeds.webp",
+              localImg: "/category/siddique-organics-seeds.webp",
+            },
+            {
+              name: "Khejur Gur",
+              slug: "khejur-gur",
+              localImg: "/category/siddique-organics-khejur-gur.webp",
             },
           ].map((cat) => (
             <Link
               key={cat.slug}
               href={`/categories/${cat.slug}`}
-              className="group p-3 sm:p-5 rounded-2xl bg-white border border-[#0E3A24]/5 hover:border-[#3B7A42]/30 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between relative overflow-hidden"
+              className="group p-4 sm:p-5 rounded-2xl bg-[#FAF9F6] border border-gray-100 hover:border-[#3B7A42]/20 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between overflow-hidden"
             >
-              <div className="absolute right-[-10px] bottom-[-10px] w-14 h-14 rounded-full bg-[#3B7A42]/5 group-hover:bg-[#3B7A42]/10 transition-colors"></div>
-              <div className="space-y-3 sm:space-y-4 relative z-10 w-full">
-                <div className="w-full h-24 sm:h-32 bg-[#F9F8F3] rounded-xl relative overflow-hidden flex items-center justify-center border border-[#0E3A24]/5">
+              <div className="space-y-4 w-full flex flex-col justify-between h-full">
+                {/* Image Container with precise aspect-ratio handling */}
+                <div className="w-full aspect-[4/3] bg-white rounded-xl relative overflow-hidden flex items-center justify-center border border-gray-100">
                   <Image
                     src={cat.localImg}
                     alt={cat.name}
                     fill
-                    sizes="(max-width: 640px) 50vw, 20vw"
+                    sizes="(max-width: 640px) 50vw, 25vw"
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
                 </div>
-                <div className="space-y-0.5">
-                  <h3 className="font-extrabold text-[#0E3A24] text-xs sm:text-base group-hover:text-[#3B7A42] transition-colors line-clamp-1 font-serif">
+
+                {/* Typography Section matching the Serif title & CTA link alignment */}
+                <div className="pt-1 flex flex-col items-start">
+                  <h3 className="font-serif font-bold text-[#0E3A24] text-sm sm:text-lg group-hover:text-[#3B7A42] transition-colors line-clamp-1">
                     {cat.name}
                   </h3>
-                  <span className="text-[10px] sm:text-[11px] text-[#3B7A42] font-bold flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
-                    Explore{" "}
-                    <ArrowRight className="w-3 h-3 transition-transform group-hover:translate-x-1" />
-                  </span>
+                  <div className="mt-1.5 flex items-center gap-1 text-[11px] sm:text-xs text-gray-500 font-medium transition-colors group-hover:text-[#3B7A42]">
+                    <span>Explore</span>
+                    <span className="transform transition-transform duration-200 group-hover:translate-x-1">
+                      &rarr;
+                    </span>
+                  </div>
                 </div>
               </div>
             </Link>
@@ -245,7 +258,7 @@ export default async function HomePage() {
                 name: "সুন্দরবনের খাঁটি মধু | Sundarban Honey",
                 price500g: 650,
                 price1kg: 1200,
-                localImg: "/photos/category-honey.webp",
+                localImg: "/photos/honey.webp",
               },
               {
                 id: "mock-2",
@@ -256,7 +269,7 @@ export default async function HomePage() {
               },
               {
                 id: "mock-3",
-                name: "Premium Premium Saudi Ajwa Dates",
+                name: "Premium Saudi Ajwa Dates",
                 price500g: 450,
                 price1kg: 850,
                 localImg: "/photos/dates.webp",
@@ -342,14 +355,14 @@ export default async function HomePage() {
                 name: "Khati Sundarban Khalisha Modhu",
                 price500g: 650,
                 price1kg: 1200,
-                localImg: "/photos/category-honey.webp",
+                localImg: "/photos/honey.webp",
               },
               {
                 id: "honey-m2",
                 name: "Premium Black Seed Flower Honey",
                 price500g: 750,
                 price1kg: 1400,
-                localImg: "/photos/category-honey.jwebp",
+                localImg: "/photos/honey.jwebp",
               },
             ].map((mockProd) => (
               <div
