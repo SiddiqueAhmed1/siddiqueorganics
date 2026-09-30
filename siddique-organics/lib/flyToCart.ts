@@ -4,11 +4,19 @@
 // call addToCart() separately (and unconditionally) so the cart is
 // always correct even when this animation is skipped or fails.
 //
-// How it targets the cart: FloatingCart renders its root button with
-// id="floating-cart-target". We look that up at click time so this
+// How it targets the cart: any element marked data-cart-target (the
+// desktop FloatingCart, the mobile bottom-nav cart icon) is a candidate.
+// We pick the first one that is actually visible at click time, so this
 // file has zero coupling to where the cart icon lives on the page.
 
-const CART_TARGET_ID = "floating-cart-target";
+function findVisibleCartTarget(): Element | null {
+  const candidates = document.querySelectorAll("[data-cart-target]");
+  for (const el of candidates) {
+    const r = el.getBoundingClientRect();
+    if (r.width > 0 && r.height > 0) return el;
+  }
+  return null;
+}
 
 export function flyToCart(sourceEl: Element | null, imageSrc?: string | null) {
   if (typeof window === "undefined" || !sourceEl) return;
@@ -16,7 +24,7 @@ export function flyToCart(sourceEl: Element | null, imageSrc?: string | null) {
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)",
   ).matches;
-  const cartTarget = document.getElementById(CART_TARGET_ID);
+  const cartTarget = findVisibleCartTarget();
   if (prefersReducedMotion || !cartTarget) return;
 
   const startRect = sourceEl.getBoundingClientRect();

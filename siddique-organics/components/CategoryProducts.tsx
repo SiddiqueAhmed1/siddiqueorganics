@@ -1,10 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Image from "next/image";
-import Link from "next/link";
 import { ArrowDownUp, SlidersHorizontal, X } from "lucide-react";
-import CartButtons from "@/components/CartButtons";
+import { ProductCard } from "@/components/ProductCard";
 
 export interface CategoryProduct {
   id: string;
@@ -33,14 +31,6 @@ export default function CategoryProducts({
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState<Sort>("default");
   const [filtersOpen, setFiltersOpen] = useState(false);
-
-  // With "All" weights a product is priced by its cheapest size.
-  const effectivePrice = (p: CategoryProduct) =>
-    weight === "500g"
-      ? p.price500g
-      : weight === "1kg"
-        ? p.price1kg
-        : Math.min(p.price500g, p.price1kg);
 
   const filtered = useMemo(() => {
     const min = minPrice === "" ? 0 : Number(minPrice);
@@ -253,88 +243,10 @@ export default function CategoryProducts({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
-            {filtered.map((product) => {
-              const soldOut = product.stock <= 0;
-              const lo = Math.min(product.price500g, product.price1kg);
-              const hi = Math.max(product.price500g, product.price1kg);
-              return (
-                <div
-                  key={product.id}
-                  className="group rounded-2xl bg-white border border-[#0E3A24]/5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative"
-                >
-                  <Link
-                    href={`/products/${product.slug}`}
-                    className="block w-full aspect-square bg-[#F9F8F3] relative overflow-hidden"
-                  >
-                    {product.images.length > 0 ? (
-                      <Image
-                        src={product.images[0]}
-                        alt={product.name}
-                        fill
-                        sizes="(max-width: 768px) 50vw, 25vw"
-                        className={`object-contain p-4 transition-transform duration-500 group-hover:scale-105 ${
-                          soldOut ? "opacity-50" : ""
-                        }`}
-                      />
-                    ) : (
-                      <span className="absolute inset-0 flex items-center justify-center text-sm text-[#0E3A24]/30 font-bold uppercase tracking-wider">
-                        No Image
-                      </span>
-                    )}
-                    {soldOut && (
-                      <span className="absolute top-2 left-2 bg-red-600 text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
-                        Out of Stock
-                      </span>
-                    )}
-                    {!soldOut && product.stock <= 5 && (
-                      <span className="absolute top-2 left-2 bg-[#6C4E31] text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
-                        Low Stock
-                      </span>
-                    )}
-                  </Link>
-
-                  <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
-                    <Link href={`/products/${product.slug}`}>
-                      <h3 className="font-bold text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
-                        {product.name}
-                      </h3>
-                    </Link>
-
-                    <div className="space-y-3">
-                      <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 border-t border-[#F9F8F3] pt-2">
-                        <span className="text-[10px] sm:text-sm text-[#0E3A24]/50 font-bold">
-                          {weight === "all" ? "500g / 1kg" : weight}
-                        </span>
-                        <span className="text-[#6C4E31] font-extrabold text-sm sm:text-lg">
-                          {weight === "all"
-                            ? `৳${lo} - ৳${hi}`
-                            : `৳${effectivePrice(product)}`}
-                        </span>
-                      </div>
-
-                      {soldOut ? (
-                        <button
-                          type="button"
-                          disabled
-                          className="w-full h-10 rounded-xl bg-[#0E3A24]/10 text-[#0E3A24]/50 text-xs sm:text-sm font-bold mt-2 cursor-not-allowed"
-                        >
-                          Out of Stock
-                        </button>
-                      ) : (
-                        <CartButtons
-                          productId={product.id}
-                          productName={product.name}
-                          price500g={product.price500g}
-                          price1kg={product.price1kg}
-                          image={product.images[0] ?? "/placeholder.png"}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-6">
+            {filtered.map((product) => (
+              <ProductCard key={product.id} product={product} weight={weight} />
+            ))}
           </div>
         )}
       </div>

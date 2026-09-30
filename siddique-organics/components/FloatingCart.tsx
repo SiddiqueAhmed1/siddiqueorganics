@@ -9,8 +9,8 @@ import { useCartDrawer } from "@/components/CartDrawerContext";
 export default function FloatingCart() {
   const { openDrawer } = useCartDrawer();
   const pathname = usePathname();
-  // Issue 8: on phones the hanging cart covers the checkout form/summary,
-  // so hide it there. Desktop (lg+) keeps it.
+  // Phones use the bottom-nav cart icon instead, so this hanging cart is
+  // desktop/tablet only (md+). On checkout it stays lg+ only (Issue 8).
   const onCheckout = pathname?.startsWith("/checkout") ?? false;
   const [totalItems, setTotalItems] = useState<number>(0);
   const [totalPrice, setTotalPrice] = useState<number>(0);
@@ -52,9 +52,10 @@ export default function FloatingCart() {
   return (
     <button
       id="floating-cart-target"
+      data-cart-target
       onClick={openDrawer}
       className={`fixed right-0 top-1/2 -translate-y-1/2 z-50 ${
-        onCheckout ? "hidden lg:flex" : "flex"
+        onCheckout ? "hidden lg:flex" : "hidden md:flex"
       } flex-col items-center justify-between w-16 sm:w-20 bg-[#0E3A24] text-white shadow-2xl border-l border-y border-[#3B7A42]/30 rounded-l-2xl overflow-hidden transition-all duration-300 transform active:scale-95 group ${
         isUpdating ? "scale-105 bg-[#3B7A42]" : ""
       }`}

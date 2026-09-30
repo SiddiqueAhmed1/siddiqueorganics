@@ -1,7 +1,7 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  --background: #f6f2e8; /* premium soft cream page background */
   --foreground: #0e3a24;
 }
 
@@ -17,7 +17,7 @@ body {
   width: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #f9f8f3;
+  background: #f6f2e8;
 }
 ::-webkit-scrollbar-thumb {
   background: #3b7a42;
@@ -38,4 +38,12 @@ body {
    line from being hidden underneath it. */
 body:has(#sticky-buy-bar) footer {
   padding-bottom: 5rem;
+}
+
+/* Mobile single-product page has its own back-arrow header (design spec),
+   so the global sticky header is hidden there on phones. */
+@media (max-width: 767px) {
+  body:has(#product-mobile) #site-header {
+    display: none;
+  }
 }

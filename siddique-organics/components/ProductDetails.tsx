@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import {
+  ArrowLeft,
   ChevronLeft,
   ChevronRight,
   Minus,
@@ -25,6 +26,7 @@ export interface ProductDetailsProduct {
   price1kg: number;
   stock: number;
   images: string[];
+  description?: string;
 }
 
 type Weight = "500g" | "1kg";
@@ -44,6 +46,7 @@ export default function ProductDetails({
   const [showBar, setShowBar] = useState(false);
 
   const mainImageRef = useRef<HTMLImageElement>(null);
+  const mobileImageRef = useRef<HTMLDivElement>(null);
   const barImageRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
@@ -92,13 +95,211 @@ export default function ProductDetails({
     `Hello, I want to order: ${product.name} (${weight}) x ${quantity}`,
   )}`;
 
+  const goBack = () => {
+    if (window.history.length > 1) router.back();
+    else router.push("/");
+  };
+
   const prev = () =>
     setActiveIndex((i) => (i - 1 + images.length) % images.length);
   const next = () => setActiveIndex((i) => (i + 1) % images.length);
 
+  const stockLabel = soldOut
+    ? "Out of Stock"
+    : product.stock <= 5
+      ? `Only ${product.stock} left`
+      : "In Stock";
+
   return (
     <>
-      <div className="grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-6 lg:gap-10">
+      {/* ================= MOBILE LAYOUT (< md) ================= */}
+      <div id="product-mobile" className="md:hidden -mx-4 sm:-mx-6 -mt-4">
+        {/* Image area with back arrow */}
+        <div
+          ref={mobileImageRef}
+          className="relative h-[46vh] min-h-[280px] max-h-[440px] bg-white"
+        >
+          <button
+            type="button"
+            onClick={goBack}
+            aria-label="Go back"
+            className="absolute left-4 top-4 z-10 flex h-10 w-10 items-center justify-center rounded-full bg-white text-[#0E3A24] shadow-[0_2px_12px_rgba(14,58,36,0.15)] active:scale-90 transition-transform"
+          >
+            <ArrowLeft className="h-5 w-5" />
+          </button>
+
+          {images.length > 0 ? (
+            <Image
+              src={images[activeIndex]}
+              alt={product.name}
+              fill
+              priority
+              sizes="100vw"
+              className="object-contain p-8 pb-12"
+            />
+          ) : (
+            <div className="flex h-full w-full items-center justify-center text-sm font-bold uppercase tracking-wider text-[#0E3A24]/30">
+              No Image
+            </div>
+          )}
+
+          {images.length > 1 && (
+            <div className="absolute inset-x-0 bottom-10 flex justify-center gap-1.5">
+              {images.map((src, i) => (
+                <button
+                  key={src + i}
+                  type="button"
+                  onClick={() => setActiveIndex(i)}
+                  aria-label={`Show image ${i + 1}`}
+                  className={`h-2 rounded-full transition-all ${
+                    i === activeIndex
+                      ? "w-6 bg-[#0E3A24]"
+                      : "w-2 bg-[#0E3A24]/25"
+                  }`}
+                />
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Rounded cream sheet */}
+        <div className="relative -mt-7 rounded-t-[2rem] bg-[#F6F2E8] px-5 pt-6 pb-6 shadow-[0_-10px_30px_rgba(14,58,36,0.07)] space-y-5">
+          <div className="flex items-start justify-between gap-3">
+            <h1 className="text-xl font-extrabold leading-tight text-[#0E3A24]">
+              {product.name}
+            </h1>
+            <span
+              className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
+                soldOut
+                  ? "bg-red-50 text-red-600"
+                  : product.stock <= 5
+                    ? "bg-[#6C4E31]/10 text-[#6C4E31]"
+                    : "bg-[#3B7A42]/10 text-[#3B7A42]"
+              }`}
+            >
+              {stockLabel}
+            </span>
+          </div>
+
+          {/* Price + quantity stepper */}
+          <div className="flex items-center justify-between">
+            <span className="text-2xl font-extrabold text-[#6C4E31]">
+              ৳{price}
+            </span>
+            <div className="flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                disabled={quantity <= 1}
+                aria-label="Decrease quantity"
+                className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#3B7A42] text-[#3B7A42] disabled:opacity-30 active:scale-90 transition-transform"
+              >
+                <Minus className="h-4 w-4" />
+              </button>
+              <span className="w-6 text-center text-base font-extrabold text-[#0E3A24]">
+                {String(quantity).padStart(2, "0")}
+              </span>
+              <button
+                type="button"
+                onClick={() => setQuantity((q) => Math.min(maxQty, q + 1))}
+                disabled={quantity >= maxQty || soldOut}
+                aria-label="Increase quantity"
+                className="flex h-9 w-9 items-center justify-center rounded-full border-2 border-[#3B7A42] text-[#3B7A42] disabled:opacity-30 active:scale-90 transition-transform"
+              >
+                <Plus className="h-4 w-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Weight options (500g / 1kg boxes) */}
+          <div className="grid grid-cols-2 gap-3">
+            {(
+              [
+                { w: "500g" as Weight, price: product.price500g },
+                { w: "1kg" as Weight, price: product.price1kg },
+              ] as const
+            ).map((o) => (
+              <button
+                key={o.w}
+                type="button"
+                onClick={() => setWeight(o.w)}
+                className={`rounded-2xl border-2 py-3 text-center transition-colors ${
+                  weight === o.w
+                    ? "border-[#0E3A24] bg-white shadow-sm"
+                    : "border-[#0E3A24]/10 bg-white/60"
+                }`}
+              >
+                <p className="text-sm font-extrabold text-[#0E3A24]">{o.w}</p>
+                <p className="mt-0.5 text-xs font-bold text-[#6C4E31]">
+                  ৳{o.price}
+                </p>
+              </button>
+            ))}
+          </div>
+
+          {/* Description */}
+          <div className="border-t border-[#0E3A24]/10 pt-4">
+            <h2 className="mb-2 text-base font-extrabold text-[#0E3A24]">
+              Description
+            </h2>
+            {product.description?.trim() ? (
+              <p className="whitespace-pre-line text-sm leading-relaxed text-[#0E3A24]/70">
+                {product.description}
+              </p>
+            ) : (
+              <p className="text-sm text-[#0E3A24]/50">
+                No description has been added for this product yet.
+              </p>
+            )}
+          </div>
+
+          {/* Quick contact */}
+          <div className="grid grid-cols-2 gap-3">
+            <a
+              href={whatsappHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex h-11 items-center justify-center gap-2 rounded-xl bg-[#25D366] text-xs font-bold text-white"
+            >
+              <MessageCircle className="h-4 w-4" />
+              WhatsApp
+            </a>
+            <a
+              href={SITE.phoneHref}
+              className="flex h-11 items-center justify-center gap-2 rounded-xl border-2 border-[#0E3A24] text-xs font-bold text-[#0E3A24]"
+            >
+              <Phone className="h-4 w-4" />
+              Call
+            </a>
+          </div>
+        </div>
+
+        {/* Fixed bottom action bar (no bottom nav on this page) */}
+        <div className="fixed inset-x-0 bottom-0 z-40 rounded-t-3xl bg-white px-4 pt-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-[0_-8px_28px_rgba(14,58,36,0.14)]">
+          <div className="mx-auto flex max-w-md gap-3">
+            <button
+              type="button"
+              onClick={() => handleAddToCart(mobileImageRef.current)}
+              disabled={soldOut}
+              className="h-12 flex-1 rounded-2xl border-2 border-[#0E3A24] text-sm font-bold text-[#0E3A24] active:scale-95 transition-transform disabled:pointer-events-none disabled:opacity-40"
+            >
+              Add to Cart
+            </button>
+            <button
+              type="button"
+              onClick={handleBuyNow}
+              disabled={soldOut}
+              className="flex h-12 flex-[1.3] items-center justify-center gap-2 rounded-2xl bg-[#0E3A24] text-sm font-bold text-white active:scale-95 transition-transform disabled:pointer-events-none disabled:opacity-40"
+            >
+              <ShoppingBag className="h-4 w-4" />
+              Buy Now
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* ================= DESKTOP / TABLET LAYOUT (md+) ================= */}
+      <div className="hidden md:grid lg:grid-cols-[minmax(0,1.1fr)_minmax(0,1fr)] gap-6 lg:gap-10">
         {/* ---------- Gallery ---------- */}
         <div className="flex flex-col-reverse lg:flex-row gap-3">
           {images.length > 1 && (
@@ -309,7 +510,7 @@ export default function ProductDetails({
         id="sticky-buy-bar"
         inert={!showBar}
         aria-hidden={!showBar}
-        className={`fixed inset-x-0 bottom-0 z-40 bg-white border-t border-[#0E3A24]/10 shadow-[0_-4px_20px_rgba(14,58,36,0.12)] transition-transform duration-300 ${
+        className={`hidden md:block fixed inset-x-0 bottom-0 z-40 bg-white border-t border-[#0E3A24]/10 shadow-[0_-4px_20px_rgba(14,58,36,0.12)] transition-transform duration-300 ${
           showBar ? "translate-y-0" : "translate-y-full"
         }`}
       >

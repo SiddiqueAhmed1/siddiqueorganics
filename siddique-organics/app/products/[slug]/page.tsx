@@ -36,9 +36,9 @@ export default async function ProductPage({ params }: Props) {
   if (!product) notFound();
 
   return (
-    <div className="w-full space-y-6 pb-10">
+    <div className="w-full md:space-y-6 pb-10">
       {/* Breadcrumb */}
-      <nav className="text-xs sm:text-sm text-[#0E3A24]/60 flex items-center gap-2">
+      <nav className="hidden md:flex text-xs sm:text-sm text-[#0E3A24]/60 items-center gap-2">
         <Link href="/" className="hover:text-[#3B7A42] transition-colors">
           Home
         </Link>
@@ -49,7 +49,7 @@ export default async function ProductPage({ params }: Props) {
       </nav>
 
       {/* Main product card */}
-      <section className="rounded-2xl bg-white border border-[#0E3A24]/10 shadow-sm p-4 sm:p-6 lg:p-8">
+      <section className="md:rounded-2xl md:bg-white md:border md:border-[#0E3A24]/10 md:shadow-sm md:p-6 lg:p-8">
         <ProductDetails
           product={{
             id: product.id,
@@ -59,12 +59,13 @@ export default async function ProductPage({ params }: Props) {
             price1kg: product.price1kg,
             stock: product.stock,
             images: product.images,
+            description: product.description,
           }}
         />
       </section>
 
       {/* Description */}
-      <section className="rounded-2xl bg-white border border-[#0E3A24]/10 shadow-sm overflow-hidden">
+      <section className="hidden md:block rounded-2xl bg-white border border-[#0E3A24]/10 shadow-sm overflow-hidden">
         <div className="border-b border-[#0E3A24]/10 px-4 sm:px-8">
           <h2 className="inline-block py-4 text-sm sm:text-base font-extrabold uppercase tracking-wide text-[#0E3A24] border-b-4 border-[#3B7A42] -mb-px">
             Product Description

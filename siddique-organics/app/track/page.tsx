@@ -50,7 +50,7 @@ export default function TrackOrderPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F9F8F3] px-4 sm:px-6 py-10 sm:py-16 flex justify-center">
+    <main className="min-h-screen bg-[#F6F2E8] px-4 sm:px-6 py-10 sm:py-16 flex justify-center">
       <div className="max-w-lg w-full">
         <div className="flex flex-col items-center text-center mb-8">
           <PackageSearch className="w-12 h-12 text-[#0E3A24] mb-3" />
