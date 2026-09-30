@@ -287,7 +287,7 @@ export default function ProductDetails({
                 href={whatsappHref}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="h-12 rounded-xl bg-[#0E3A24] hover:bg-[#3B7A42] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+                className="h-12 rounded-xl bg-[#25D366] hover:bg-[#1fb857] text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-colors"
               >
                 <MessageCircle className="w-4 h-4" />
                 Order on WhatsApp

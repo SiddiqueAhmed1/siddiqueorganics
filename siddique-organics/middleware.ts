@@ -16,7 +16,7 @@ export async function middleware(request: NextRequest) {
   const sessionToken = request.cookies.get("session")?.value;
 
   // Protect all dashboard routes starting with /admin
-  if (pathname.startsWith("/admin")) {
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     // If no session exists, instantly redirect to the custom login screen
     if (!sessionToken) {
       return NextResponse.redirect(new URL("/admin-siddique", request.url));

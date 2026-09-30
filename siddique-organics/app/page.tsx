@@ -1,7 +1,7 @@
 import prisma from "../lib/prisma";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowRight } from "lucide-react";
+import { Star, ShoppingCart, ArrowRight } from "lucide-react";
 import CartButtons from "@/components/CartButtons";
 import HeroSlider from "@/components/HeroSlider";
 
@@ -80,13 +80,13 @@ export default async function HomePage() {
     <div
       key={product.id}
       data-product-card
-      className={`group rounded-2xl bg-white shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
-        rank ? "border-2 border-green-800/30" : "border border-green-800/20"
+      className={`group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative ${
+        rank ? "border-2 border-amber-400/50" : "border border-[#0E3A24]/5"
       }`}
     >
       <Link
         href={`/products/${product.slug}`}
-        className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
+        className="block w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
       >
         {product.images && product.images.length > 0 ? (
           <Image
@@ -108,12 +108,17 @@ export default async function HomePage() {
         )}
         {rank && (
           <span className="absolute top-2 right-2 bg-amber-500 text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
-            Best Seller
+            #{rank} Best Seller
           </span>
         )}
       </Link>
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
         <div className="space-y-1">
+          <div className="flex items-center gap-0.5 text-amber-500">
+            {[...Array(5)].map((_, i) => (
+              <Star key={i} className="w-3 h-3 fill-current" />
+            ))}
+          </div>
           <Link href={`/products/${product.slug}`}>
             <h3 className="font-bold text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
               {product.name}
@@ -406,7 +411,7 @@ export default async function HomePage() {
         </div>
         {products.filter((p) => p.category === "nuts" || p.category === "nut")
           .length === 0 ? (
-          <div className="grid  grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-6">
             {[
               {
                 id: "nut-m1",

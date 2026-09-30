@@ -65,7 +65,6 @@ export default async function CategoryPage({ params }: Props) {
           Home
         </Link>
         <span>/</span>
-        <span>Categories /</span>
         <span className="text-[#0E3A24] font-semibold">{category.name}</span>
       </nav>
 
@@ -117,9 +116,9 @@ export default async function CategoryPage({ params }: Props) {
 
           <div className="space-y-2 text-sm text-[#0E3A24]/70">
             <p style={bnFont}>
-              “{category.bn}” ক্যাটাগরির কোনো পণ্য এখন আমাদের কাছে নেই। খুব
-              শিগগিরই নতুন স্টক আসবে, ইনশাআল্লাহ। অগ্রিম অর্ডার বা বিস্তারিত
-              জানতে আমাদের সাথে যোগাযোগ করুন।
+              “{category.bn}” ক্যাটাগরির কোনো পণ্য এখন আমাদের কাছে নেই। খুব শিগগিরই
+              নতুন স্টক আসবে, ইনশাআল্লাহ। অগ্রিম অর্ডার বা বিস্তারিত জানতে আমাদের
+              সাথে যোগাযোগ করুন।
             </p>
             <p>
               We have no products in {category.name} right now. Fresh stock is
@@ -134,7 +133,7 @@ export default async function CategoryPage({ params }: Props) {
               )}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="h-11 rounded-xl bg-[#0E3A24] hover:bg-[#3B7A42] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
+              className="h-11 rounded-xl bg-[#25D366] hover:bg-[#1fb857] text-white text-sm font-bold flex items-center justify-center gap-2 transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               <span style={bnFont}>হোয়াটসঅ্যাপ / WhatsApp</span>
@@ -152,8 +151,7 @@ export default async function CategoryPage({ params }: Props) {
             href="/"
             className="inline-block text-sm font-bold text-[#3B7A42] hover:underline"
           >
-            <span style={bnFont}>অন্যান্য পণ্য দেখুন</span> / Browse other
-            products
+            <span style={bnFont}>অন্যান্য পণ্য দেখুন</span> / Browse other products
           </Link>
         </div>
       ) : (

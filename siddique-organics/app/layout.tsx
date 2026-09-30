@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Phone, ShoppingBag } from "lucide-react";
 import "./globals.css";
+import ShopOnly from "@/components/ShopOnly";
 import Footer from "@/components/Footer";
 import FloatingCart from "@/components/FloatingCart";
 import CartDrawer from "@/components/CartDrawer";
@@ -44,7 +45,7 @@ export default function RootLayout({
       >
         <CartDrawerProvider>
           {/* GLOBAL HEADER WITH NATURAL COMPLEMENTARY BG */}
-          <header className="sticky top-0 z-50 w-full bg-[#ffffff] border-b border-[#0E3A24]/10 px-4 sm:px-6 lg:px-8">
+          <ShopOnly><header className="sticky top-0 z-50 w-full bg-[#ffffff] border-b border-[#0E3A24]/10 px-4 sm:px-6 lg:px-8">
             <div className="mx-auto flex max-w-[1420px] h-16 sm:h-20 items-center justify-between gap-2 sm:gap-10">
               {/* 1. Left Viewport: Absolute Protected Mix-Blend Logo */}
               <div className="flex-shrink-0 flex items-center justify-start h-16 sm:h-20 w-[108px] min-[400px]:w-[140px] sm:w-[175px]">
@@ -105,16 +106,18 @@ export default function RootLayout({
                 inputClassName="w-full h-10 pl-4 pr-10 rounded-full border border-[#0E3A24]/10 bg-white text-sm text-[#0E3A24] focus:outline-none focus:border-[#3B7A42] transition-all"
               />
             </div>
-          </header>
+          </header></ShopOnly>
 
           {/* MAXIMUM ALLOCATION ROUTING LAYER VIEW */}
           <main className="mx-auto max-w-[1500px] min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 py-6">
             {children}
           </main>
 
-          <Footer />
-          <FloatingCart />
-          <CartDrawer />
+          <ShopOnly>
+            <Footer />
+            <FloatingCart />
+            <CartDrawer />
+          </ShopOnly>
         </CartDrawerProvider>
       </body>
     </html>

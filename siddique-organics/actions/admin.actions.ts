@@ -1,6 +1,7 @@
 "use server";
 
 import prisma from "../lib/prisma";
+import { requireSession } from "../lib/session";
 import { revalidatePath } from "next/cache";
 
 interface AdminActionResponse {
@@ -18,6 +19,7 @@ export async function createProduct(
   formData: FormData,
 ): Promise<AdminActionResponse> {
   try {
+    await requireSession();
     const name = formData.get("name") as string | null;
     const slug = formData.get("slug") as string | null;
     const description = formData.get("description") as string | null;
@@ -88,6 +90,7 @@ export async function updateProduct(
   formData: FormData,
 ): Promise<AdminActionResponse> {
   try {
+    await requireSession();
     const name = formData.get("name") as string | null;
     const description = formData.get("description") as string | null;
     const price500gStr = formData.get("price500g") as string | null;
@@ -144,6 +147,7 @@ export async function updateOrderStatus(
   newStatus: "PENDING" | "CONFIRMED" | "SHIPPED" | "DELIVERED" | "CANCELLED",
 ): Promise<AdminActionResponse> {
   try {
+    await requireSession();
     await prisma.order.update({
       where: { id: orderId },
       data: { status: newStatus },
@@ -166,6 +170,7 @@ export async function updateOrderStatus(
  */
 export async function getDashboardOverviewMetrics(): Promise<AdminActionResponse> {
   try {
+    await requireSession();
     const COST_PRICE_FACTOR = 0.6;
 
     const allOrders = await prisma.order.findMany({
@@ -204,6 +209,7 @@ export async function getDashboardOverviewMetrics(): Promise<AdminActionResponse
  */
 export async function getCustomerDirectoryLog(): Promise<AdminActionResponse> {
   try {
+    await requireSession();
     const uniqueCustomerOrders = await prisma.order.findMany({
       orderBy: { createdAt: "desc" },
       select: {
@@ -226,5 +232,21 @@ export async function getCustomerDirectoryLog(): Promise<AdminActionResponse> {
         ? error.message
         : "Customer tracking extraction failure.";
     return { success: false, message: errorMessage };
+  }
+}
+
+/** Delete a product (blocked by DB if it already has orders). */
+export async function deleteProduct(id: string): Promise<AdminActionResponse> {
+  try {
+    await requireSession();
+    await prisma.product.delete({ where: { id } });
+    revalidatePath("/");
+    revalidatePath("/admin/products");
+    return { success: true, message: "Product deleted." };
+  } catch {
+    return {
+      success: false,
+      message: "Delete failed. Products with past orders cannot be deleted; set stock to 0 instead.",
+    };
   }
 }
