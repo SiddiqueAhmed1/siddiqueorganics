@@ -57,8 +57,8 @@ const MAX_QUANTITY_PER_ITEM = 5;
  * Server Action to handle secure multi-item checkout, dynamic shipping
  * verification, and atomic stock decrements across every cart line.
  *
- * IMPORTANT: only `id`, `weight`, and `quantity` are trusted from the
- * client's cart. Product name and price are always re-read from the
+ * IMPORTANT: only `id` (product id), `weight` (variant size) and `quantity`
+ * are trusted from the client's cart. Product name and price are always re-read from the
  * database inside the transaction — never trust price from the client.
  */
 export async function submitCustomerOrder(
@@ -124,50 +124,63 @@ export async function submitCustomerOrder(
       let subtotalSum = 0;
       const orderItemsData: {
         productId: string;
-        weight: string;
+        variantId: string;
+        size: string;
         quantity: number;
       }[] = [];
       const confirmationItems: OrderConfirmationItem[] = [];
 
       for (const item of cartItems) {
-        const product = await tx.product.findUnique({
-          where: { id: item.id },
+        // The cart's `weight` field carries the variant's size label (e.g. "500g", "1ltr").
+        // (productId + size) is unique, so this resolves exactly one variant.
+        const variant = await tx.productVariant.findUnique({
+          where: { productId_size: { productId: item.id, size: item.weight } },
+          include: { product: { select: { name: true } } },
         });
 
-        if (!product) {
+        if (!variant) {
           throw new OrderValidationError(
             "One of the products in your cart is no longer available. It has been removed — please review your cart and try again.",
             item.id,
           );
         }
-        if (product.stock < item.quantity) {
+        if (variant.stock < item.quantity) {
           throw new OrderValidationError(
-            `Insufficient stock for ${product.name}. Only ${product.stock} units available.`,
+            `Insufficient stock for ${variant.product.name} (${variant.size}). Only ${variant.stock} units available.`,
             item.id,
           );
         }
 
-        const unitPrice =
-          item.weight === "500g" ? product.price500g : product.price1kg;
+        // Atomic reservation: the `stock >= quantity` guard prevents two
+        // simultaneous orders from overselling the last units.
+        const reserved = await tx.productVariant.updateMany({
+          where: { id: variant.id, stock: { gte: item.quantity } },
+          data: { stock: { decrement: item.quantity } },
+        });
+        if (reserved.count === 0) {
+          throw new OrderValidationError(
+            `${variant.product.name} (${variant.size}) just sold out. Please reduce the quantity or remove it.`,
+            item.id,
+          );
+        }
+
+        const unitPrice = variant.price;
         const subtotal = unitPrice * item.quantity;
         subtotalSum += subtotal;
 
         orderItemsData.push({
           productId: item.id,
-          weight: item.weight,
+          variantId: variant.id,
+          size: variant.size,
           quantity: item.quantity,
         });
         confirmationItems.push({
-          productName: product.name,
-          weight: item.weight,
+          productName: variant.product.name,
+          // Kept as `weight` so the order-success page keeps working unchanged.
+          weight: variant.size,
           quantity: item.quantity,
           unitPrice,
           subtotal,
-        });
-
-        await tx.product.update({
-          where: { id: item.id },
-          data: { stock: { decrement: item.quantity } },
         });
       }
 
@@ -252,7 +265,7 @@ export async function trackOrderByPhone(
         createdAt: true,
         items: {
           select: {
-            weight: true,
+            size: true,
             quantity: true,
             product: {
               select: {
@@ -274,7 +287,11 @@ export async function trackOrderByPhone(
     return {
       success: true,
       message: "Customer order profiles mapped successfully.",
-      data: orders,
+      // `weight` is kept in the response shape so the tracking UI needs no change.
+      data: orders.map((o) => ({
+        ...o,
+        items: o.items.map(({ size, ...rest }) => ({ ...rest, weight: size })),
+      })),
     };
   } catch (error) {
     const errorMessage =

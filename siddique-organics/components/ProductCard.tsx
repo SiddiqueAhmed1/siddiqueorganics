@@ -3,14 +3,37 @@ import Link from "next/link";
 import { Star } from "lucide-react";
 import CartButtons from "@/components/CartButtons";
 
+export interface CardVariant {
+  id: string;
+  size: string;
+  price: number;
+  stock: number;
+}
+
 export interface CardProduct {
   id: string;
   name: string;
   slug: string;
-  price500g: number;
-  price1kg: number;
-  stock: number;
   images: string[];
+  variants: CardVariant[];
+}
+
+/** Derives total stock, price range and size label from a product's variants. */
+function summarize(product: CardProduct, weight: string = "all") {
+  const stock = product.variants.reduce((sum, v) => sum + v.stock, 0);
+  const matching =
+    weight === "all"
+      ? product.variants
+      : product.variants.filter((v) => v.size === weight);
+  const list = matching.length > 0 ? matching : product.variants;
+  const prices = list.map((v) => v.price);
+  const lo = prices.length ? Math.min(...prices) : 0;
+  const hi = prices.length ? Math.max(...prices) : 0;
+  const priceLabel = lo === hi ? `৳${lo}` : `৳${lo} - ৳${hi}`;
+  const sizes = list.map((v) => v.size);
+  const sizeLabel =
+    sizes.length <= 2 ? sizes.join(" / ") : `${sizes.length} sizes`;
+  return { stock, priceLabel, sizeLabel };
 }
 
 /**
@@ -24,20 +47,14 @@ export function ProductCard({
   rank,
 }: {
   product: CardProduct;
-  /** Which price to show — "all" shows the 500g–1kg range. */
-  weight?: "all" | "500g" | "1kg";
+  /** Which size's price to show — "all" shows the full price range. */
+  weight?: string;
   /** Small #N badge (mobile top-selling grid). */
   rank?: number;
 }) {
-  const soldOut = product.stock <= 0;
-  const lowStock = !soldOut && product.stock <= 5;
-  const lo = Math.min(product.price500g, product.price1kg);
-  const hi = Math.max(product.price500g, product.price1kg);
-  const sizeLabel = weight === "all" ? "500g / 1kg" : weight;
-  const priceLabel =
-    weight === "all"
-      ? `৳${lo} - ৳${hi}`
-      : `৳${weight === "500g" ? product.price500g : product.price1kg}`;
+  const { stock, priceLabel, sizeLabel } = summarize(product, weight);
+  const soldOut = stock <= 0;
+  const lowStock = !soldOut && stock <= 5;
 
   return (
     <div
@@ -104,8 +121,7 @@ export function ProductCard({
               variant="card"
               productId={product.id}
               productName={product.name}
-              price500g={product.price500g}
-              price1kg={product.price1kg}
+              variants={product.variants}
               image={product.images?.[0] ?? "/placeholder.png"}
             />
           )}
@@ -126,6 +142,7 @@ export function ClassicProductCard({
   product: CardProduct;
   rank: number;
 }) {
+  const { stock, priceLabel, sizeLabel } = summarize(product);
   return (
     <div
       data-product-card
@@ -148,7 +165,7 @@ export function ClassicProductCard({
             No Image
           </span>
         )}
-        {product.stock <= 5 && product.stock > 0 && (
+        {stock <= 5 && stock > 0 && (
           <span className="absolute top-2 left-2 bg-[#6C4E31] text-white font-extrabold text-[9px] sm:text-sm px-2 py-0.5 rounded-full shadow-sm">
             Low Stock
           </span>
@@ -173,17 +190,16 @@ export function ClassicProductCard({
         <div className="space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-0.5 border-t border-[#F9F8F3] pt-2">
             <span className="text-sm text-[#0E3A24]/50 font-bold">
-              500g / 1kg
+              {sizeLabel}
             </span>
             <span className="text-[#6C4E31] font-extrabold text-sm sm:text-lg">
-              ৳{product.price500g} - ৳{product.price1kg}
+              {priceLabel}
             </span>
           </div>
           <CartButtons
             productId={product.id}
             productName={product.name}
-            price500g={product.price500g}
-            price1kg={product.price1kg}
+            variants={product.variants}
             image={product.images?.[0] ?? "/placeholder.png"}
           />
         </div>

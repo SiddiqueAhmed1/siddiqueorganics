@@ -2,23 +2,17 @@
 
 import { useMemo, useState } from "react";
 import { ArrowDownUp, SlidersHorizontal, X } from "lucide-react";
-import { ProductCard } from "@/components/ProductCard";
+import { ProductCard, type CardProduct } from "@/components/ProductCard";
 
-export interface CategoryProduct {
-  id: string;
-  name: string;
-  slug: string;
-  price500g: number;
-  price1kg: number;
-  stock: number;
-  images: string[];
-}
+export type CategoryProduct = CardProduct;
 
-type WeightFilter = "all" | "500g" | "1kg";
+type WeightFilter = string; // "all" or a variant size label such as "500g", "1ltr"
 type StockFilter = "all" | "in" | "out";
 type Sort = "default" | "low" | "high";
 
-const bnFont = { fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif" };
+const bnFont = {
+  fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif",
+};
 
 export default function CategoryProducts({
   products,
@@ -32,21 +26,31 @@ export default function CategoryProducts({
   const [sort, setSort] = useState<Sort>("default");
   const [filtersOpen, setFiltersOpen] = useState(false);
 
+  // Size filter options come from the variants that actually exist in this category.
+  const sizes = useMemo(() => {
+    const seen = new Set<string>();
+    products.forEach((p) => p.variants.forEach((v) => seen.add(v.size)));
+    return [...seen];
+  }, [products]);
+
   const filtered = useMemo(() => {
     const min = minPrice === "" ? 0 : Number(minPrice);
     const max = maxPrice === "" ? Infinity : Number(maxPrice);
+    const pool = (p: CategoryProduct) =>
+      weight === "all"
+        ? p.variants
+        : p.variants.filter((v) => v.size === weight);
     const price = (p: CategoryProduct) =>
-      weight === "500g"
-        ? p.price500g
-        : weight === "1kg"
-          ? p.price1kg
-          : Math.min(p.price500g, p.price1kg);
+      Math.min(...pool(p).map((v) => v.price));
+    const stockOf = (p: CategoryProduct) =>
+      pool(p).reduce((sum, v) => sum + v.stock, 0);
 
     const list = products.filter((p) => {
+      if (pool(p).length === 0) return false; // product doesn't come in the chosen size
       const pr = price(p);
       if (pr < min || pr > max) return false;
-      if (stock === "in" && p.stock <= 0) return false;
-      if (stock === "out" && p.stock > 0) return false;
+      if (stock === "in" && stockOf(p) <= 0) return false;
+      if (stock === "out" && stockOf(p) > 0) return false;
       return true;
     });
 
@@ -78,9 +82,9 @@ export default function CategoryProducts({
     <div className="space-y-6">
       {/* Weight */}
       <div>
-        <p className="text-sm font-extrabold text-[#0E3A24] mb-2">Weight</p>
+        <p className="text-sm font-extrabold text-[#0E3A24] mb-2">Size</p>
         <div className="flex flex-wrap gap-2">
-          {(["all", "500g", "1kg"] as const).map((w) => (
+          {["all", ...sizes].map((w) => (
             <button
               key={w}
               type="button"
@@ -95,9 +99,7 @@ export default function CategoryProducts({
 
       {/* Price */}
       <div>
-        <p className="text-sm font-extrabold text-[#0E3A24] mb-2">
-          Price (৳)
-        </p>
+        <p className="text-sm font-extrabold text-[#0E3A24] mb-2">Price (৳)</p>
         <div className="flex items-center gap-2">
           <input
             type="number"
@@ -225,10 +227,7 @@ export default function CategoryProducts({
 
         {filtered.length === 0 ? (
           <div className="rounded-2xl bg-white border border-[#0E3A24]/10 shadow-sm p-8 text-center space-y-2">
-            <p
-              className="text-lg font-extrabold text-[#0E3A24]"
-              style={bnFont}
-            >
+            <p className="text-lg font-extrabold text-[#0E3A24]" style={bnFont}>
               কোনো পণ্য পাওয়া যায়নি
             </p>
             <p className="text-sm font-bold text-[#6C4E31]">

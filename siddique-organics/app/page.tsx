@@ -24,12 +24,36 @@ const HERO_SLIDES = [
 
 // Shop-by-category tiles (desktop grid + mobile chip row share this list).
 const CATEGORY_TILES = [
-  { name: "Pure Honey", slug: "honey", img: "/category/siddique-organics-honey.webp" },
-  { name: "Premium Oils", slug: "oil", img: "/category/siddique-organics-mustard-oil.webp" },
-  { name: "Dates", slug: "dates", img: "/category/siddique-organics-dates.webp" },
-  { name: "Organic Nuts", slug: "nuts", img: "/category/siddique-organics-cashew-almonds.webp" },
-  { name: "Healthy Seeds", slug: "seeds", img: "/category/siddique-organics-seeds.webp" },
-  { name: "Khejur Gur", slug: "khejur-gur", img: "/category/siddique-organics-khejur-gur.webp" },
+  {
+    name: "Pure Honey",
+    slug: "honey",
+    img: "/category/siddique-organics-honey.webp",
+  },
+  {
+    name: "Premium Oils",
+    slug: "oil",
+    img: "/category/siddique-organics-mustard-oil.webp",
+  },
+  {
+    name: "Dates",
+    slug: "dates",
+    img: "/category/siddique-organics-dates.webp",
+  },
+  {
+    name: "Organic Nuts",
+    slug: "nuts",
+    img: "/category/siddique-organics-cashew-almonds.webp",
+  },
+  {
+    name: "Healthy Seeds",
+    slug: "seeds",
+    img: "/category/siddique-organics-seeds.webp",
+  },
+  {
+    name: "Khejur Gur",
+    slug: "khejur-gur",
+    img: "/category/siddique-organics-khejur-gur.webp",
+  },
 ];
 
 // Shown only while the database has no products at all (fresh install).
@@ -44,35 +68,96 @@ const mock = (
   id,
   name,
   slug: "",
-  price500g,
-  price1kg,
-  stock: 10,
   images: [img],
+  variants: [
+    { id: `${id}-500g`, size: "500g", price: price500g, stock: 10 },
+    { id: `${id}-1kg`, size: "1kg", price: price1kg, stock: 10 },
+  ],
 });
 
 const MOCKS = {
   top: [
-    mock("mock-1", "সুন্দরবনের খাঁটি মধু | Sundarban Honey", 650, 1200, "/category/siddique-organics-honey.webp"),
-    mock("mock-2", "Extra Virgin Wooden Pressed Mustard Oil", 220, 400, "/category/siddique-organics-mustard-oil.webp"),
-    mock("mock-3", "Premium Saudi Ajwa Dates", 450, 850, "/category/siddique-organics-dates.webp"),
-    mock("mock-4", "Organic Roasted Cashew Nuts Premium", 550, 1050, "/category/siddique-organics-cashew-almonds.webp"),
+    mock(
+      "mock-1",
+      "সুন্দরবনের খাঁটি মধু | Sundarban Honey",
+      650,
+      1200,
+      "/category/siddique-organics-honey.webp",
+    ),
+    mock(
+      "mock-2",
+      "Extra Virgin Wooden Pressed Mustard Oil",
+      220,
+      400,
+      "/category/siddique-organics-mustard-oil.webp",
+    ),
+    mock(
+      "mock-3",
+      "Premium Saudi Ajwa Dates",
+      450,
+      850,
+      "/category/siddique-organics-dates.webp",
+    ),
+    mock(
+      "mock-4",
+      "Organic Roasted Cashew Nuts Premium",
+      550,
+      1050,
+      "/category/siddique-organics-cashew-almonds.webp",
+    ),
   ],
   honey: [
-    mock("honey-m1", "Khati Sundarban Khalisha Modhu", 650, 1200, "/category/siddique-organics-honey.webp"),
-    mock("honey-m2", "Premium Black Seed Flower Honey", 750, 1400, "/category/siddique-organics-honey.webp"),
+    mock(
+      "honey-m1",
+      "Khati Sundarban Khalisha Modhu",
+      650,
+      1200,
+      "/category/siddique-organics-honey.webp",
+    ),
+    mock(
+      "honey-m2",
+      "Premium Black Seed Flower Honey",
+      750,
+      1400,
+      "/category/siddique-organics-honey.webp",
+    ),
   ],
   nuts: [
-    mock("nut-m1", "Premium Roasted Cashew Nuts", 550, 1050, "/category/siddique-organics-cashew-almonds.webp"),
-    mock("nut-m2", "Premium Quality California Almonds", 500, 950, "/category/siddique-organics-cashew-almonds.webp"),
+    mock(
+      "nut-m1",
+      "Premium Roasted Cashew Nuts",
+      550,
+      1050,
+      "/category/siddique-organics-cashew-almonds.webp",
+    ),
+    mock(
+      "nut-m2",
+      "Premium Quality California Almonds",
+      500,
+      950,
+      "/category/siddique-organics-cashew-almonds.webp",
+    ),
   ],
   oils: [
-    mock("oil-m1", "Khati Sorishar Tel (Wooden Pressed)", 220, 400, "/category/siddique-organics-mustard-oil.webp"),
-    mock("oil-m2", "Premium Extra Virgin Coconut Oil", 450, 850, "/category/siddique-organics-mustard-oil.webp"),
+    mock(
+      "oil-m1",
+      "Khati Sorishar Tel (Wooden Pressed)",
+      220,
+      400,
+      "/category/siddique-organics-mustard-oil.webp",
+    ),
+    mock(
+      "oil-m2",
+      "Premium Extra Virgin Coconut Oil",
+      450,
+      850,
+      "/category/siddique-organics-mustard-oil.webp",
+    ),
   ],
 };
 
 interface ProductData extends CardProduct {
-  category: string;
+  categoryId: string;
 }
 
 async function fetchStoreProducts(): Promise<ProductData[]> {
@@ -83,40 +168,37 @@ async function fetchStoreProducts(): Promise<ProductData[]> {
         id: true,
         name: true,
         slug: true,
-        category: true,
-        price500g: true,
-        price1kg: true,
-        stock: true,
+        categoryId: true,
         images: true,
+        variants: {
+          orderBy: { price: "asc" },
+          select: { id: true, size: true, price: true, stock: true },
+        },
       },
     });
-    return records.map((item) => ({
-      id: item.id,
-      name: item.name,
-      slug: item.slug,
-      category: item.category
-        ? item.category.trim().toLowerCase()
-        : "uncategorized",
-      price500g: item.price500g,
-      price1kg: item.price1kg,
-      stock: item.stock,
-      images: item.images,
-    }));
+    // Products without any variant can't be sold, so they are hidden from the storefront.
+    return records.filter((item) => item.variants.length > 0);
   } catch (error) {
     console.error("Failed to extract active store products:", error);
     return [];
   }
 }
 
+async function fetchCategories() {
+  try {
+    return await prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, slug: true, image: true },
+    });
+  } catch (error) {
+    console.error("Failed to load categories:", error);
+    return [];
+  }
+}
+
 const GRID = "grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 md:gap-6";
 
-function SectionHeading({
-  title,
-  href,
-}: {
-  title: string;
-  href?: string;
-}) {
+function SectionHeading({ title, href }: { title: string; href?: string }) {
   return (
     <div className="flex items-end justify-between border-b border-[#0E3A24]/10 pb-3">
       <h2 className="text-lg sm:text-xl font-bold text-[#0E3A24] md:uppercase md:tracking-wide">
@@ -159,17 +241,53 @@ function ProductSection({
 }
 
 export default async function HomePage() {
-  const products = await fetchStoreProducts();
+  const [products, categories] = await Promise.all([
+    fetchStoreProducts(),
+    fetchCategories(),
+  ]);
+
+  // Category tiles come from the database; the static list is only a fresh-install fallback.
+  const tiles =
+    categories.length > 0
+      ? categories.map((c) => ({
+          name: c.name,
+          slug: c.slug,
+          img: c.image ?? "/placeholder.png",
+        }))
+      : CATEGORY_TILES;
 
   const topSelling = products.slice(0, 4);
   const topList = products.length === 0 ? MOCKS.top : topSelling;
-  const honeyProducts = products.filter((p) => p.category === "honey");
-  const nutsProducts = products.filter(
-    (p) => p.category === "nuts" || p.category === "nut",
-  );
-  const oilsProducts = products.filter(
-    (p) => p.category === "oil" || p.category === "oils",
-  );
+  const sections =
+    products.length === 0
+      ? [
+          {
+            key: "honey",
+            title: "Premium Honey",
+            href: "/categories/honey",
+            items: MOCKS.honey,
+          },
+          {
+            key: "nuts",
+            title: "Organic Nuts",
+            href: "/categories/nuts",
+            items: MOCKS.nuts,
+          },
+          {
+            key: "oil",
+            title: "Premium Oils",
+            href: "/categories/oil",
+            items: MOCKS.oils,
+          },
+        ]
+      : categories
+          .map((c) => ({
+            key: c.id,
+            title: c.name,
+            href: `/categories/${c.slug}`,
+            items: products.filter((p) => p.categoryId === c.id).slice(0, 8),
+          }))
+          .filter((sec) => sec.items.length > 0);
 
   return (
     <div className="w-full space-y-9 md:space-y-12 pb-10 md:pb-16">
@@ -196,7 +314,7 @@ export default async function HomePage() {
 
         {/* Mobile chips (design: rounded icon tiles with label underneath) */}
         <div className="md:hidden -mx-4 px-4 flex gap-4 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-          {CATEGORY_TILES.map((cat) => (
+          {tiles.map((cat) => (
             <Link
               key={cat.slug}
               href={`/categories/${cat.slug}`}
@@ -220,7 +338,7 @@ export default async function HomePage() {
 
         {/* Desktop / tablet grid (unchanged design) */}
         <div className="hidden md:grid grid-cols-3 lg:grid-cols-6 gap-4">
-          {CATEGORY_TILES.map((cat) => (
+          {tiles.map((cat) => (
             <Link
               key={cat.slug}
               href={`/categories/${cat.slug}`}
@@ -270,24 +388,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <ProductSection
-        title="Premium Honey"
-        href="/categories/honey"
-        items={honeyProducts}
-        fallback={MOCKS.honey}
-      />
-      <ProductSection
-        title="Organic Nuts"
-        href="/categories/nuts"
-        items={nutsProducts}
-        fallback={MOCKS.nuts}
-      />
-      <ProductSection
-        title="Premium Oils"
-        href="/categories/oil"
-        items={oilsProducts}
-        fallback={MOCKS.oils}
-      />
+      {sections.map((sec) => (
+        <ProductSection
+          key={sec.key}
+          title={sec.title}
+          href={sec.href}
+          items={sec.items}
+          fallback={[]}
+        />
+      ))}
     </div>
   );
 }

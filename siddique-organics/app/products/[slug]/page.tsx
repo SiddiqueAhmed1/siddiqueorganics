@@ -13,7 +13,16 @@ type Props = { params: Promise<{ slug: string }> };
 // cache() so generateMetadata + the page share a single DB query.
 const getProduct = cache(async (slug: string) => {
   try {
-    return await prisma.product.findUnique({ where: { slug } });
+    return await prisma.product.findUnique({
+      where: { slug },
+      include: {
+        category: { select: { name: true } },
+        variants: {
+          orderBy: { price: "asc" },
+          select: { id: true, size: true, price: true, stock: true },
+        },
+      },
+    });
   } catch (error) {
     console.error("Failed to load product:", error);
     return null;
@@ -54,12 +63,10 @@ export default async function ProductPage({ params }: Props) {
           product={{
             id: product.id,
             name: product.name,
-            category: product.category,
-            price500g: product.price500g,
-            price1kg: product.price1kg,
-            stock: product.stock,
+            category: product.category.name,
             images: product.images,
             description: product.description,
+            variants: product.variants,
           }}
         />
       </section>

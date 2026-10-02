@@ -18,18 +18,21 @@ import { flyToCart } from "@/lib/flyToCart";
 import { useCartDrawer } from "@/components/CartDrawerContext";
 import { SITE } from "@/lib/site";
 
+export interface ProductDetailsVariant {
+  id: string;
+  size: string;
+  price: number;
+  stock: number;
+}
+
 export interface ProductDetailsProduct {
   id: string;
   name: string;
   category: string;
-  price500g: number;
-  price1kg: number;
-  stock: number;
   images: string[];
   description?: string;
+  variants: ProductDetailsVariant[];
 }
-
-type Weight = "500g" | "1kg";
 
 export default function ProductDetails({
   product,
@@ -41,7 +44,13 @@ export default function ProductDetails({
 
   const images = product.images ?? [];
   const [activeIndex, setActiveIndex] = useState(0);
-  const [weight, setWeight] = useState<Weight>("1kg");
+  const variants = product.variants ?? [];
+  const [variantId, setVariantId] = useState<string>(
+    () => (variants.find((v) => v.stock > 0) ?? variants[0])?.id ?? "",
+  );
+  const selected = variants.find((v) => v.id === variantId) ?? variants[0];
+  const weight = selected?.size ?? "";
+  const stock = selected?.stock ?? 0;
   const [quantity, setQuantity] = useState(1);
   const [showBar, setShowBar] = useState(false);
 
@@ -50,10 +59,17 @@ export default function ProductDetails({
   const barImageRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
-  const price = weight === "500g" ? product.price500g : product.price1kg;
-  const soldOut = product.stock <= 0;
-  const maxQty = Math.max(1, Math.min(MAX_QTY_PER_ITEM, product.stock));
+  const price = selected?.price ?? 0;
+  const soldOut = stock <= 0;
+  const maxQty = Math.max(1, Math.min(MAX_QTY_PER_ITEM, stock));
   const cartImage = images[0] ?? "/placeholder.png";
+
+  const selectVariant = (v: ProductDetailsVariant) => {
+    setVariantId(v.id);
+    setQuantity((q) =>
+      Math.min(q, Math.max(1, Math.min(MAX_QTY_PER_ITEM, v.stock))),
+    );
+  };
 
   // Show the bottom bar once the main action buttons have scrolled
   // out of view (above the viewport).
@@ -106,8 +122,8 @@ export default function ProductDetails({
 
   const stockLabel = soldOut
     ? "Out of Stock"
-    : product.stock <= 5
-      ? `Only ${product.stock} left`
+    : stock <= 5
+      ? `Only ${stock} left`
       : "In Stock";
 
   return (
@@ -172,7 +188,7 @@ export default function ProductDetails({
               className={`mt-0.5 shrink-0 rounded-full px-2.5 py-1 text-[11px] font-bold ${
                 soldOut
                   ? "bg-red-50 text-red-600"
-                  : product.stock <= 5
+                  : stock <= 5
                     ? "bg-[#6C4E31]/10 text-[#6C4E31]"
                     : "bg-[#3B7A42]/10 text-[#3B7A42]"
               }`}
@@ -212,24 +228,22 @@ export default function ProductDetails({
           </div>
 
           {/* Weight options (500g / 1kg boxes) */}
-          <div className="grid grid-cols-2 gap-3">
-            {(
-              [
-                { w: "500g" as Weight, price: product.price500g },
-                { w: "1kg" as Weight, price: product.price1kg },
-              ] as const
-            ).map((o) => (
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            {variants.map((o) => (
               <button
-                key={o.w}
+                key={o.id}
+                disabled={o.stock <= 0}
                 type="button"
-                onClick={() => setWeight(o.w)}
-                className={`rounded-xl border-2 py-2.5 text-center transition-all cursor-pointer ${
-                  weight === o.w
+                onClick={() => selectVariant(o)}
+                className={`rounded-xl border-2 py-2.5 text-center transition-all cursor-pointer disabled:cursor-not-allowed disabled:opacity-40 ${
+                  selected?.id === o.id
                     ? "border-[#3B7A42] bg-[#3B7A42]/15 shadow-[0_4px_14px_rgba(59,122,66,0.18)]"
                     : "border-[#3B7A42]/20 bg-[#3B7A42]/5 hover:bg-[#3B7A42]/10"
                 }`}
               >
-                <p className="text-sm font-extrabold text-[#0E3A24]">{o.w}</p>
+                <p className="text-sm font-extrabold text-[#0E3A24]">
+                  {o.size}
+                </p>
                 <p className="mt-0.5 text-xs font-bold text-[#6C4E31]">
                   ৳{o.price}
                 </p>
@@ -387,15 +401,15 @@ export default function ProductDetails({
               className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                 soldOut
                   ? "bg-red-50 text-red-600"
-                  : product.stock <= 5
+                  : stock <= 5
                     ? "bg-[#6C4E31]/10 text-[#6C4E31]"
                     : "bg-[#3B7A42]/10 text-[#3B7A42]"
               }`}
             >
               {soldOut
                 ? "Out of Stock"
-                : product.stock <= 5
-                  ? `Only ${product.stock} left`
+                : stock <= 5
+                  ? `Only ${stock} left`
                   : "In Stock"}
             </span>
           </div>
@@ -405,24 +419,22 @@ export default function ProductDetails({
             <p className="text-sm font-bold text-[#0E3A24]/70 mb-2">
               Select Size:
             </p>
-            <div className="flex gap-3">
-              {(
-                [
-                  { w: "1kg" as Weight, price: product.price1kg },
-                  { w: "500g" as Weight, price: product.price500g },
-                ] as const
-              ).map((o) => (
+            <div className="flex flex-wrap gap-3">
+              {variants.map((o) => (
                 <button
-                  key={o.w}
+                  key={o.id}
+                  disabled={o.stock <= 0}
                   type="button"
-                  onClick={() => setWeight(o.w)}
-                  className={`rounded-xl border-2 px-5 py-2 text-center transition-all ${
-                    weight === o.w
+                  onClick={() => selectVariant(o)}
+                  className={`rounded-xl border-2 px-5 py-2 text-center transition-all disabled:cursor-not-allowed disabled:opacity-40 ${
+                    selected?.id === o.id
                       ? "border-[#3B7A42] bg-[#3B7A42]/15 shadow-[0_4px_14px_rgba(59,122,66,0.18)]"
                       : "border-[#3B7A42]/20 bg-[#3B7A42]/5 hover:bg-[#3B7A42]/10"
                   }`}
                 >
-                  <p className="font-extrabold text-[#0E3A24] text-sm">{o.w}</p>
+                  <p className="font-extrabold text-[#0E3A24] text-sm">
+                    {o.size}
+                  </p>
                   <p className="text-[#6C4E31] font-bold text-xs mt-0.5">
                     ৳{o.price}
                   </p>

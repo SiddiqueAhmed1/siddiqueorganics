@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
-import { CATEGORIES, getCategory } from "@/lib/categories";
+import { getCategory as getBengaliMeta } from "@/lib/categories";
 import CategoryProducts, {
   type CategoryProduct,
 } from "@/components/CategoryProducts";
@@ -14,48 +14,73 @@ export const revalidate = 60;
 
 type Props = { params: Promise<{ slug: string }> };
 
-const getProducts = cache(async (slug: string): Promise<CategoryProduct[]> => {
-  const category = getCategory(slug);
-  if (!category) return [];
+// One cached query shared by generateMetadata + the page.
+const getCategoryData = cache(async (slug: string) => {
   try {
-    const rows = await prisma.product.findMany({
-      where: {
-        OR: category.match.map((m) => ({
-          category: { equals: m, mode: "insensitive" as const },
-        })),
-      },
-      orderBy: { createdAt: "desc" },
+    return await prisma.category.findUnique({
+      where: { slug },
       select: {
         id: true,
         name: true,
         slug: true,
-        price500g: true,
-        price1kg: true,
-        stock: true,
-        images: true,
+        products: {
+          where: { variants: { some: {} } }, // hide products that have no sellable variant
+          orderBy: { createdAt: "desc" },
+          select: {
+            id: true,
+            name: true,
+            slug: true,
+            images: true,
+            variants: {
+              orderBy: { price: "asc" },
+              select: { id: true, size: true, price: true, stock: true },
+            },
+          },
+        },
       },
     });
-    return rows;
   } catch (error) {
     console.error("Failed to load category products:", error);
+    return null;
+  }
+});
+
+const getAllCategories = cache(async () => {
+  try {
+    return await prisma.category.findMany({
+      orderBy: { name: "asc" },
+      select: { name: true, slug: true },
+    });
+  } catch (error) {
+    console.error("Failed to load categories:", error);
     return [];
   }
 });
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const category = getCategory(slug);
+  const category = await getCategoryData(slug);
   if (!category) return { title: "Category not found | Siddique Organics" };
   return { title: `${category.name} | Siddique Organics` };
 }
 
 export default async function CategoryPage({ params }: Props) {
   const { slug } = await params;
-  const category = getCategory(slug);
-  if (!category) notFound();
+  const [data, allCategories] = await Promise.all([
+    getCategoryData(slug),
+    getAllCategories(),
+  ]);
+  if (!data) notFound();
 
-  const products = await getProducts(slug);
-  const bnFont = { fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif" };
+  // Bengali label is optional: used when lib/categories knows this slug, else the DB name.
+  const category = {
+    name: data.name,
+    bn: getBengaliMeta(slug)?.bn ?? data.name,
+  };
+  const products: CategoryProduct[] = data.products;
+  const bnFont = {
+    fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif",
+  };
 
   return (
     <div className="w-full space-y-6 pb-10">
@@ -80,7 +105,7 @@ export default async function CategoryPage({ params }: Props) {
 
       {/* Other categories */}
       <div className="flex gap-2 overflow-x-auto pb-1 [&::-webkit-scrollbar]:hidden [scrollbar-width:none]">
-        {CATEGORIES.map((c) => (
+        {allCategories.map((c) => (
           <Link
             key={c.slug}
             href={`/categories/${c.slug}`}
@@ -116,9 +141,9 @@ export default async function CategoryPage({ params }: Props) {
 
           <div className="space-y-2 text-sm text-[#0E3A24]/70">
             <p style={bnFont}>
-              “{category.bn}” ক্যাটাগরির কোনো পণ্য এখন আমাদের কাছে নেই। খুব শিগগিরই
-              নতুন স্টক আসবে, ইনশাআল্লাহ। অগ্রিম অর্ডার বা বিস্তারিত জানতে আমাদের
-              সাথে যোগাযোগ করুন।
+              “{category.bn}” ক্যাটাগরির কোনো পণ্য এখন আমাদের কাছে নেই। খুব
+              শিগগিরই নতুন স্টক আসবে, ইনশাআল্লাহ। অগ্রিম অর্ডার বা বিস্তারিত
+              জানতে আমাদের সাথে যোগাযোগ করুন।
             </p>
             <p>
               We have no products in {category.name} right now. Fresh stock is
@@ -151,7 +176,8 @@ export default async function CategoryPage({ params }: Props) {
             href="/"
             className="inline-block text-sm font-bold text-[#3B7A42] hover:underline"
           >
-            <span style={bnFont}>অন্যান্য পণ্য দেখুন</span> / Browse other products
+            <span style={bnFont}>অন্যান্য পণ্য দেখুন</span> / Browse other
+            products
           </Link>
         </div>
       ) : (

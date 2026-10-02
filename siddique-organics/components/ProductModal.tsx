@@ -13,9 +13,15 @@ import { useCartDrawer } from "@/components/CartDrawerContext";
 export interface ProductModalProduct {
   id: string;
   name: string;
-  price500g: number;
-  price1kg: number;
   image: string;
+  variants: ProductModalVariant[];
+}
+
+export interface ProductModalVariant {
+  id: string;
+  size: string;
+  price: number;
+  stock: number;
 }
 
 interface ProductModalProps {
@@ -24,8 +30,6 @@ interface ProductModalProps {
   product: ProductModalProduct;
 }
 
-type Weight = "500g" | "1kg";
-
 export default function ProductModal({
   isOpen,
   onClose,
@@ -33,7 +37,11 @@ export default function ProductModal({
 }: ProductModalProps) {
   const router = useRouter();
   const { openDrawer } = useCartDrawer();
-  const [selectedWeight, setSelectedWeight] = useState<Weight>("1kg");
+  const [selectedId, setSelectedId] = useState<string>(
+    () =>
+      (product.variants.find((v) => v.stock > 0) ?? product.variants[0])?.id ??
+      "",
+  );
   const imageRef = useRef<HTMLImageElement>(null);
 
   // Issue 4: freeze the page behind the modal while it is open.
@@ -49,18 +57,21 @@ export default function ProductModal({
 
   if (!isOpen || typeof document === "undefined") return null;
 
-  const selectedPrice =
-    selectedWeight === "500g" ? product.price500g : product.price1kg;
+  const selected =
+    product.variants.find((v) => v.id === selectedId) ?? product.variants[0];
+  const selectedPrice = selected?.price ?? 0;
+  const soldOut = !selected || selected.stock <= 0;
 
   const buildItem = () => ({
     id: product.id,
     name: product.name,
     price: selectedPrice,
-    weight: selectedWeight,
+    weight: selected?.size ?? "",
     image: product.image,
   });
 
   const handleAddToCart = () => {
+    if (soldOut) return;
     flyToCart(imageRef.current, product.image);
     addToCart(buildItem());
     onClose();
@@ -70,6 +81,7 @@ export default function ProductModal({
   // Issues 1 & 2: "Buy Now" adds to the real cart (merging with what is
   // already there), then goes to checkout, which shows the whole cart.
   const handleBuyNow = () => {
+    if (soldOut) return;
     addToCart(buildItem());
     onClose();
     router.push("/checkout");
@@ -118,23 +130,19 @@ export default function ProductModal({
               Select Size
             </p>
             <div className="grid grid-cols-2 gap-3">
-              {(
-                [
-                  { weight: "1kg" as Weight, price: product.price1kg },
-                  { weight: "500g" as Weight, price: product.price500g },
-                ] as const
-              ).map((option) => (
+              {product.variants.map((option) => (
                 <button
-                  key={option.weight}
-                  onClick={() => setSelectedWeight(option.weight)}
-                  className={`rounded-xl border-2 px-3 py-3 text-center transition-colors ${
-                    selectedWeight === option.weight
+                  key={option.id}
+                  disabled={option.stock <= 0}
+                  onClick={() => setSelectedId(option.id)}
+                  className={`rounded-xl border-2 px-3 py-3 text-center transition-colors disabled:opacity-40 disabled:cursor-not-allowed ${
+                    selected?.id === option.id
                       ? "border-[#0E3A24] bg-[#0E3A24]/5"
                       : "border-[#0E3A24]/10 hover:border-[#0E3A24]/30"
                   }`}
                 >
                   <p className="font-extrabold text-[#0E3A24] text-sm">
-                    {option.weight}
+                    {option.size}
                   </p>
                   <p className="text-[#6C4E31] font-bold text-sm mt-0.5">
                     ৳{option.price}
@@ -149,13 +157,15 @@ export default function ProductModal({
         <div className="flex gap-2 px-5 pb-5">
           <button
             onClick={handleAddToCart}
-            className="w-full h-11 rounded-xl border border-[#0E3A24] text-[#0E3A24] hover:text-white hover:bg-[#0E3A24] text-sm font-bold transition-colors"
+            disabled={soldOut}
+            className="w-full h-11 disabled:opacity-40 disabled:pointer-events-none rounded-xl border border-[#0E3A24] text-[#0E3A24] hover:text-white hover:bg-[#0E3A24] text-sm font-bold transition-colors"
           >
             Add to Cart
           </button>
           <button
             onClick={handleBuyNow}
-            className="w-full h-11 rounded-xl bg-[#0E3A24] text-white hover:bg-[#3B7A42] text-sm font-bold transition-colors"
+            disabled={soldOut}
+            className="w-full h-11 disabled:opacity-40 disabled:pointer-events-none rounded-xl bg-[#0E3A24] text-white hover:bg-[#3B7A42] text-sm font-bold transition-colors"
           >
             Buy Now
           </button>

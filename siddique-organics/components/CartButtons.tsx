@@ -3,6 +3,7 @@
 import { useCallback, useState } from "react";
 import dynamic from "next/dynamic";
 import { Plus, ShoppingBag } from "lucide-react";
+import type { CardVariant } from "@/components/ProductCard";
 
 // The modal is only downloaded/mounted once someone actually opens it,
 // instead of shipping (and mounting) one per product card on page load.
@@ -11,8 +12,7 @@ const ProductModal = dynamic(() => import("@/components/ProductModal"));
 interface CartButtonsProps {
   productId: string;
   productName: string;
-  price500g: number;
-  price1kg: number;
+  variants: CardVariant[];
   image: string;
   /**
    * "full"  -> the original full-width Buy Now button (default).
@@ -26,8 +26,7 @@ interface CartButtonsProps {
 export default function CartButtons({
   productId,
   productName,
-  price500g,
-  price1kg,
+  variants,
   image,
   variant = "full",
 }: CartButtonsProps) {
@@ -73,8 +72,7 @@ export default function CartButtons({
           product={{
             id: productId,
             name: productName,
-            price500g,
-            price1kg,
+            variants,
             image,
           }}
         />
