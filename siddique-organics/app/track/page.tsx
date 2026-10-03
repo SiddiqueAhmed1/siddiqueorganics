@@ -68,7 +68,7 @@ export default function TrackOrderPage() {
             value={phone}
             onChange={(e) => setPhone(e.target.value)}
             placeholder="01XXXXXXXXX"
-            className="flex-1 h-11 rounded-xl border border-[#0E3A24]/15 px-3 text-sm focus:outline-none focus:border-[#3B7A42]"
+            className="flex-1 h-11 sm:h-11 rounded-xl border border-[#0E3A24]/15 px-3 text-sm focus:outline-none focus:border-[#3B7A42]"
           />
           <button
             onClick={handleTrack}

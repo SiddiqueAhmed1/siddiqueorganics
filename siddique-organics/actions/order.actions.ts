@@ -2,6 +2,7 @@
 
 import prisma from "../lib/prisma";
 import { revalidatePath } from "next/cache";
+import { getDeliveryZone } from "../lib/delivery";
 
 interface OrderConfirmationItem {
   productName: string;
@@ -18,6 +19,8 @@ export interface OrderConfirmation {
   address: string;
   totalAmount: number;
   deliveryCharge: number;
+  deliveryZone: string;
+  deliveryZoneLabel: string;
   status: string;
   createdAt: string;
   items: OrderConfirmationItem[];
@@ -50,7 +53,6 @@ class OrderValidationError extends Error {
   }
 }
 
-const DELIVERY_CHARGE = 100;
 const MAX_QUANTITY_PER_ITEM = 5;
 
 /**
@@ -90,6 +92,16 @@ export async function submitCustomerOrder(
           "Please provide a complete delivery address (min 10 characters).",
       };
     }
+
+    // Delivery charge is ALWAYS derived on the server from the zone key.
+    const zone = getDeliveryZone(formData.get("deliveryZone"));
+    if (!zone) {
+      return {
+        success: false,
+        message: "Please select a valid delivery area.",
+      };
+    }
+    const deliveryCharge = zone.charge;
 
     let cartItems: CartItemInput[] = [];
     try {
@@ -184,7 +196,7 @@ export async function submitCustomerOrder(
         });
       }
 
-      const totalAmount = subtotalSum + DELIVERY_CHARGE;
+      const totalAmount = subtotalSum + deliveryCharge;
 
       const newOrder = await tx.order.create({
         data: {
@@ -192,6 +204,8 @@ export async function submitCustomerOrder(
           phone: phone.trim(),
           address: address.trim(),
           totalAmount,
+          deliveryZone: zone.key,
+          deliveryCharge,
           status: "PENDING",
           items: { create: orderItemsData },
         },
@@ -213,7 +227,9 @@ export async function submitCustomerOrder(
         phone: result.newOrder.phone,
         address: result.newOrder.address,
         totalAmount: result.totalAmount,
-        deliveryCharge: DELIVERY_CHARGE,
+        deliveryCharge,
+        deliveryZone: zone.key,
+        deliveryZoneLabel: zone.label,
         status: result.newOrder.status,
         createdAt: result.newOrder.createdAt.toISOString(),
         items: result.confirmationItems,

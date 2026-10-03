@@ -13,8 +13,12 @@ import {
 } from "@/lib/cart";
 import { useCartDrawer } from "@/components/CartDrawerContext";
 import { useScrollLock } from "@/lib/useScrollLock";
+import { DELIVERY_ZONES } from "@/lib/delivery";
 
-const DELIVERY_CHARGE = 100;
+// Delivery area is chosen at checkout, so the drawer only shows the range.
+const zoneCharges = Object.values(DELIVERY_ZONES).map((z) => z.charge);
+const MIN_DELIVERY = Math.min(...zoneCharges);
+const MAX_DELIVERY = Math.max(...zoneCharges);
 
 export default function CartDrawer() {
   const router = useRouter();
@@ -152,18 +156,20 @@ export default function CartDrawer() {
 
         {cart.length > 0 && (
           <div className="border-t border-[#0E3A24]/10 px-5 py-4 space-y-3">
-            <div className="flex justify-between text-sm font-semibold text-[#0E3A24]/70">
+            <div className="flex justify-between text-base font-extrabold text-[#0E3A24]">
               <span>Subtotal</span>
               <span>৳{totalPrice}</span>
             </div>
-            <div className="flex justify-between text-sm font-semibold text-[#0E3A24]/70">
-              <span>Delivery Charge</span>
-              <span>৳{DELIVERY_CHARGE}</span>
+            <div className="flex justify-between gap-3 text-xs font-semibold text-[#0E3A24]/80">
+              <span>ডেলিভারি চার্জ (আপনার এলাকা অনুযায়ী)</span>
+              <span className="whitespace-nowrap">
+                ৳{MIN_DELIVERY} – ৳{MAX_DELIVERY}
+              </span>
             </div>
-            <div className="flex justify-between text-base font-extrabold text-[#0E3A24] pt-2 border-t border-[#0E3A24]/10">
-              <span>Total</span>
-              <span>৳{totalPrice + DELIVERY_CHARGE}</span>
-            </div>
+            <p className="text-xs text-[#0E3A24]/80 font-semibold">
+              আপনার ডেলিভারি এলাকা নির্বাচন করার পর চেকআউটে চূড়ান্ত মোট মূল্য
+              দেখানো হবে।
+            </p>
             <button
               onClick={() => {
                 closeDrawer();

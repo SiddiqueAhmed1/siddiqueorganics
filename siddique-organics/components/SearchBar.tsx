@@ -1,9 +1,19 @@
 "use client";
 
-import { useCallback, useEffect, useId, useRef, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useId,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { useRouter } from "next/navigation";
-import { Loader2, Search, X } from "lucide-react";
-import { searchProducts, type SearchResult } from "@/actions/search.actions";
+import { Search, X } from "lucide-react";
+import {
+  getAllSearchableProducts,
+  type SearchProductItem,
+} from "@/actions/search.actions";
 
 interface SearchBarProps {
   placeholder: string;
@@ -19,42 +29,60 @@ export default function SearchBar({
   const router = useRouter();
   const listId = useId();
   const wrapRef = useRef<HTMLDivElement>(null);
-  const reqId = useRef(0);
+
   const [query, setQuery] = useState("");
-  const [results, setResults] = useState<SearchResult[]>([]);
   const [open, setOpen] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
   const [active, setActive] = useState(-1);
 
-  // Debounced search (300ms). `reqId` drops out-of-order responses.
-  useEffect(() => {
-    const q = query.trim();
-    const id = ++reqId.current;
+  // ক্লায়েন্টে ক্যাশড প্রোডাক্ট লিস্ট
+  const [allProducts, setAllProducts] = useState<SearchProductItem[]>([]);
+  const hasLoadedRef = useRef(false);
 
-    const timer = setTimeout(
-      async () => {
-        if (q.length < 2) {
-          setResults([]);
-          setSearched(false);
-          setLoading(false);
-          return;
+  // ইনপুটে ফোকাস বা হোভার করার সাথে সাথে প্রি-ফেচ হবে (Zero-latency)
+  const preloadProducts = useCallback(async () => {
+    if (hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
+    try {
+      const data = await getAllSearchableProducts();
+      setAllProducts(data);
+    } catch {
+      hasLoadedRef.current = false;
+    }
+  }, []);
+
+  // ইনস্ট্যান্ট মেমোরি ফিল্টারিং (0ms Delay)
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (q.length < 2 || !allProducts.length) return [];
+
+    const num = Number(q.replace(/[৳,\s]/g, ""));
+    const isPriceSearch = Number.isFinite(num) && num > 0;
+    const lo = num * 0.85;
+    const hi = num * 1.15;
+
+    return allProducts
+      .filter((p) => {
+        // ১. নাম বা ক্যাটাগরিতে মিল থাকলে
+        const textMatch =
+          p.name.toLowerCase().includes(q) ||
+          p.category.toLowerCase().includes(q);
+
+        if (textMatch) return true;
+
+        // ২. দামের সাথে মিল থাকলে (±15% রেঞ্জ)
+        if (isPriceSearch) {
+          return (
+            (p.minPrice >= lo && p.minPrice <= hi) ||
+            (p.maxPrice >= lo && p.maxPrice <= hi)
+          );
         }
-        setLoading(true);
-        const data = await searchProducts(q);
-        if (id !== reqId.current) return; // a newer keystroke won
-        setResults(data);
-        setSearched(true);
-        setLoading(false);
-        setActive(-1);
-      },
-      q.length < 2 ? 0 : 300,
-    );
 
-    return () => clearTimeout(timer);
-  }, [query]);
+        return false;
+      })
+      .slice(0, 6); // প্রথম ৬টি ইনস্ট্যান্ট রেজাল্ট
+  }, [query, allProducts]);
 
-  // Click outside closes the dropdown.
+  // ড্রপডাউনের বাইরে ক্লিক করলে বন্ধ হবে
   useEffect(() => {
     const onDown = (e: MouseEvent | TouchEvent) => {
       if (!wrapRef.current?.contains(e.target as Node)) setOpen(false);
@@ -67,12 +95,10 @@ export default function SearchBar({
     };
   }, []);
 
-  // Picking a result opens the single product page (no modal).
   const pick = useCallback(
-    (r: SearchResult) => {
+    (r: SearchProductItem) => {
       setOpen(false);
       setQuery("");
-      setResults([]);
       router.push(`/products/${r.slug}`);
     },
     [router],
@@ -89,7 +115,9 @@ export default function SearchBar({
       setActive((i) => (i <= 0 ? results.length - 1 : i - 1));
     } else if (e.key === "Enter") {
       e.preventDefault();
-      pick(results[active >= 0 ? active : 0]);
+      if (results[active >= 0 ? active : 0]) {
+        pick(results[active >= 0 ? active : 0]);
+      }
     }
   };
 
@@ -100,11 +128,16 @@ export default function SearchBar({
       <input
         type="text"
         value={query}
+        onFocus={() => {
+          preloadProducts();
+          setOpen(true);
+        }}
+        onMouseEnter={preloadProducts}
         onChange={(e) => {
           setQuery(e.target.value);
           setOpen(true);
+          setActive(-1);
         }}
-        onFocus={() => setOpen(true)}
         onKeyDown={onKeyDown}
         placeholder={placeholder}
         role="combobox"
@@ -114,16 +147,14 @@ export default function SearchBar({
         autoComplete="off"
         className={inputClassName}
       />
+
       <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#0E3A24]/60">
-        {loading ? (
-          <Loader2 className="w-4 h-4 animate-spin" />
-        ) : query ? (
+        {query ? (
           <button
             type="button"
             aria-label="Clear search"
             onClick={() => {
               setQuery("");
-              setResults([]);
             }}
           >
             <X className="w-4 h-4" />
@@ -171,19 +202,18 @@ export default function SearchBar({
                   {r.category}
                 </p>
               </div>
+
               <p className="text-xs font-extrabold text-[#6C4E31] whitespace-nowrap">
-                ৳{r.price500g} - ৳{r.price1kg}
+                {r.minPrice === r.maxPrice
+                  ? `৳${r.minPrice}`
+                  : `৳${r.minPrice} - ৳${r.maxPrice}`}
               </p>
             </li>
           ))}
-          {!loading && searched && results.length === 0 && (
+
+          {results.length === 0 && (
             <li className="px-4 py-5 text-center text-sm font-semibold text-[#0E3A24]/50">
               No products found for “{query.trim()}”
-            </li>
-          )}
-          {loading && results.length === 0 && (
-            <li className="px-4 py-5 text-center text-sm font-semibold text-[#0E3A24]/50">
-              Searching…
             </li>
           )}
         </ul>

@@ -7,73 +7,61 @@ datasource db {
   provider = "postgresql"
 }
 
-// 1. Employee & Admin Authentication
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
-  password  String // Hashed password
+  password  String
   name      String
   role      Role     @default(EMPLOYEE)
   createdAt DateTime @default(now())
 }
 
-enum Role {
-  SUPER_ADMIN
-  EMPLOYEE
-}
-
-// 2. Dynamic Category
 model Category {
   id        String    @id @default(cuid())
   name      String    @unique
   slug      String    @unique
-  image     String? // Cloudinary URL (optional)
-  products  Product[]
+  image     String?
   createdAt DateTime  @default(now())
+  products  Product[]
 }
 
-// 3. Product (price/stock now live on ProductVariant)
 model Product {
   id          String           @id @default(cuid())
   name        String
   slug        String           @unique
-  description String           @db.Text
+  description String
   images      String[]
   createdAt   DateTime         @default(now())
-
-  categoryId String
-  category   Category @relation(fields: [categoryId], references: [id], onDelete: Restrict)
-
-  variants ProductVariant[]
-  orders   OrderItem[]
+  categoryId  String
+  orders      OrderItem[]
+  category    Category         @relation(fields: [categoryId], references: [id])
+  variants    ProductVariant[]
 
   @@index([categoryId])
 }
 
-// 4. Product Variant (size, price, stock, SKU)
 model ProductVariant {
-  id        String  @id @default(cuid())
-  productId String
-  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
-
-  size  String // e.g. "100gm", "500gm", "1ltr"
-  price Float
-  stock Int    @default(0)
-  sku   String @unique
-
+  id         String      @id @default(cuid())
+  productId  String
+  size       String
+  price      Float
+  stock      Int         @default(0)
+  sku        String      @unique
   orderItems OrderItem[]
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
 
-  @@unique([productId, size]) // a product can't have the same size twice
+  @@unique([productId, size])
   @@index([productId])
 }
 
-// 5. Customer Order
 model Order {
   id           String      @id @default(cuid())
   customerName String
   phone        String
-  address      String      @db.Text
+  address      String
   totalAmount  Float
+  deliveryZone   String?
+  deliveryCharge Float       @default(100)
   status       OrderStatus @default(PENDING)
   createdAt    DateTime    @default(now())
   items        OrderItem[]
@@ -81,24 +69,24 @@ model Order {
   @@index([phone])
 }
 
-// 6. Order line item
 model OrderItem {
-  id        String  @id @default(cuid())
+  id        String          @id @default(cuid())
   orderId   String
-  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
   productId String
-  product   Product @relation(fields: [productId], references: [id])
-
-  // Optional link to the purchased variant. SetNull keeps order history intact
-  // when an employee later removes a variant; `size` is the permanent snapshot.
+  quantity  Int
+  size      String
   variantId String?
-  variant   ProductVariant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
-
-  size     String // snapshot of the size the customer bought
-  quantity Int
+  order     Order           @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product         @relation(fields: [productId], references: [id])
+  variant   ProductVariant? @relation(fields: [variantId], references: [id])
 
   @@index([orderId])
   @@index([variantId])
+}
+
+enum Role {
+  SUPER_ADMIN
+  EMPLOYEE
 }
 
 enum OrderStatus {

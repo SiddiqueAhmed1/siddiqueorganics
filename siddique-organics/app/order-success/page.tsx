@@ -85,7 +85,10 @@ export default function OrderSuccessPage() {
 
           <div className="border-t border-[#0E3A24]/10 pt-4 space-y-1.5 text-sm font-semibold text-[#0E3A24]/70">
             <div className="flex justify-between">
-              <span>Delivery Charge</span>
+              <span>
+                Delivery Charge
+                {order.deliveryZoneLabel ? ` (${order.deliveryZoneLabel})` : ""}
+              </span>
               <span>৳{order.deliveryCharge}</span>
             </div>
             <div className="flex justify-between text-base font-extrabold text-[#0E3A24]">

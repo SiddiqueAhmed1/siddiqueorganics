@@ -14,8 +14,11 @@ import {
   type CartItem,
 } from "@/lib/cart";
 import { submitCustomerOrder } from "@/actions/order.actions";
-
-const DELIVERY_CHARGE = 100;
+import {
+  DELIVERY_ZONES,
+  DEFAULT_ZONE,
+  type DeliveryZone,
+} from "@/lib/delivery";
 
 export default function CheckoutPage() {
   const router = useRouter();
@@ -24,6 +27,7 @@ export default function CheckoutPage() {
   const [customerName, setCustomerName] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
+  const [zone, setZone] = useState<DeliveryZone>(DEFAULT_ZONE);
   const [error, setError] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
 
@@ -49,11 +53,13 @@ export default function CheckoutPage() {
     };
   }, []);
 
+  // Display only — the server recalculates the real charge from the zone key.
+  const deliveryCharge = DELIVERY_ZONES[zone].charge;
   const subtotal = cart.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0,
   );
-  const total = cart.length > 0 ? subtotal + DELIVERY_CHARGE : 0;
+  const total = cart.length > 0 ? subtotal + deliveryCharge : 0;
 
   const handlePlaceOrder = () => {
     setError(null);
@@ -71,6 +77,7 @@ export default function CheckoutPage() {
     formData.set("customerName", customerName);
     formData.set("phone", phone);
     formData.set("address", address);
+    formData.set("deliveryZone", zone);
     formData.set(
       "cartItems",
       JSON.stringify(
@@ -139,7 +146,7 @@ export default function CheckoutPage() {
                 type="text"
                 value={customerName}
                 onChange={(e) => setCustomerName(e.target.value)}
-                placeholder="e.g. Siddique Ahmed"
+                placeholder="e.g. Abdullah Masud"
                 className="w-full h-11 rounded-xl border border-[#0E3A24]/15 px-3 text-sm focus:outline-none focus:border-[#3B7A42]"
               />
             </div>
@@ -168,6 +175,46 @@ export default function CheckoutPage() {
                 placeholder="House, Road, Area, City"
                 className="w-full rounded-xl border border-[#0E3A24]/15 px-3 py-2 text-sm focus:outline-none focus:border-[#3B7A42] resize-none"
               />
+            </div>
+
+            {/* Delivery Area — selecting a card updates the total instantly */}
+            <div>
+              <label
+                id="delivery-area-label"
+                className="block text-sm font-bold text-[#0E3A24]/70 mb-2"
+              >
+                Delivery Area
+              </label>
+              <div
+                role="radiogroup"
+                aria-labelledby="delivery-area-label"
+                className="grid grid-cols-1 gap-3"
+              >
+                {(Object.keys(DELIVERY_ZONES) as DeliveryZone[]).map((key) => {
+                  const selected = zone === key;
+                  return (
+                    <button
+                      key={key}
+                      type="button"
+                      role="radio"
+                      aria-checked={selected}
+                      onClick={() => setZone(key)}
+                      className={`rounded-xl border-2 p-3 text-left transition-colors ${
+                        selected
+                          ? "border-[#3B7A42] bg-[#3B7A42]/5"
+                          : "border-[#0E3A24]/15 hover:border-[#0E3A24]/30"
+                      }`}
+                    >
+                      <p className="text-sm font-bold text-[#0E3A24] leading-tight">
+                        {DELIVERY_ZONES[key].label}
+                      </p>
+                      <p className="text-sm font-extrabold text-[#6C4E31] mt-1">
+                        ৳{DELIVERY_ZONES[key].charge}
+                      </p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             <div className="rounded-xl bg-[#F9F8F3] border border-[#0E3A24]/10 px-4 py-3 text-sm text-[#0E3A24]/70 font-semibold">
@@ -279,8 +326,8 @@ export default function CheckoutPage() {
               <span>৳{subtotal}</span>
             </div>
             <div className="flex justify-between text-sm font-semibold text-[#0E3A24]/70">
-              <span>Delivery Charge</span>
-              <span>৳{DELIVERY_CHARGE}</span>
+              <span>Delivery Charge ({DELIVERY_ZONES[zone].label})</span>
+              <span>৳{deliveryCharge}</span>
             </div>
             <div className="flex justify-between text-base font-extrabold text-[#0E3A24] pt-2 border-t border-[#0E3A24]/10">
               <span>Total</span>

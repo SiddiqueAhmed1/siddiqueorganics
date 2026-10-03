@@ -1,70 +1,55 @@
 "use server";
 
 import prisma from "../lib/prisma";
+import { unstable_cache } from "next/cache";
 
-export interface SearchResult {
+export interface SearchProductItem {
   id: string;
   name: string;
   slug: string;
   category: string;
-  price500g: number;
-  price1kg: number;
+  minPrice: number;
+  maxPrice: number;
   image: string | null;
 }
 
-/**
- * Instant-search over name, description, category and price.
- * - Text: case-insensitive "contains" on name / description / category.
- * - Number (e.g. "650"): also matches products whose 500g or 1kg price
- *   equals it, or is within ±15% of it.
- * Returns a tiny payload (max 6 rows, only the fields the dropdown needs).
- */
-export async function searchProducts(rawQuery: string): Promise<SearchResult[]> {
-  const q = (rawQuery ?? "").trim().slice(0, 60);
-  if (q.length < 2) return [];
+// প্রোডাক্ট লিস্ট সার্ভার মেমোরিতে ১ ঘণ্টার জন্য ক্যাশ থাকবে
+export const getAllSearchableProducts = unstable_cache(
+  async (): Promise<SearchProductItem[]> => {
+    try {
+      const rows = await prisma.product.findMany({
+        select: {
+          id: true,
+          name: true,
+          slug: true,
+          images: true,
+          category: {
+            select: { name: true },
+          },
+          variants: {
+            orderBy: { price: "asc" },
+            select: { price: true },
+          },
+        },
+      });
 
-  const or: Record<string, unknown>[] = [
-    { name: { contains: q, mode: "insensitive" } },
-    { description: { contains: q, mode: "insensitive" } },
-    { category: { contains: q, mode: "insensitive" } },
-  ];
-
-  const num = Number(q.replace(/[৳,\s]/g, ""));
-  if (Number.isFinite(num) && num > 0) {
-    const lo = num * 0.85;
-    const hi = num * 1.15;
-    or.push({ price500g: { gte: lo, lte: hi } });
-    or.push({ price1kg: { gte: lo, lte: hi } });
-  }
-
-  try {
-    const rows = await prisma.product.findMany({
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      where: { OR: or as any },
-      select: {
-        id: true,
-        name: true,
-        slug: true,
-        category: true,
-        price500g: true,
-        price1kg: true,
-        images: true,
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    });
-
-    return rows.map((r) => ({
-      id: r.id,
-      name: r.name,
-      slug: r.slug,
-      category: r.category,
-      price500g: r.price500g,
-      price1kg: r.price1kg,
-      image: r.images?.[0] ?? null,
-    }));
-  } catch (error) {
-    console.error("Product search failed:", error);
-    return [];
-  }
-}
+      return rows.map((r) => {
+        const prices = r.variants.map((v) => v.price);
+        return {
+          id: r.id,
+          name: r.name,
+          slug: r.slug,
+          category: r.category?.name ?? "General",
+          minPrice: prices.length > 0 ? Math.min(...prices) : 0,
+          maxPrice: prices.length > 0 ? Math.max(...prices) : 0,
+          image: r.images?.[0] ?? null,
+        };
+      });
+    } catch (e) {
+      console.error("Cache load failed:", e);
+      return [];
+    }
+  },
+  ["searchable-products-index"],
+  { revalidate: 3600 },
+);

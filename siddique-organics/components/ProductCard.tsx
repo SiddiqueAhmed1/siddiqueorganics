@@ -1,6 +1,5 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star } from "lucide-react";
 import CartButtons from "@/components/CartButtons";
 
 export interface CardVariant {
@@ -100,11 +99,11 @@ export function ProductCard({
 
       <div className="flex flex-1 flex-col p-3 md:p-5">
         <Link href={`/products/${product.slug}`}>
-          <h3 className="text-center md:text-left font-normal text-[#0E3A24] text-[13px] md:text-base leading-snug line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] group-hover:text-[#3B7A42] transition-colors">
+          <h3 className=" md:text-left font-normal text-[#0E3A24] text-[13px] md:text-base leading-snug line-clamp-2 min-h-[2.5rem] md:min-h-[2.75rem] group-hover:text-[#3B7A42] transition-colors">
             {product.name}
           </h3>
         </Link>
-        <p className="mt-0.5 text-center text-[11px] font-medium text-[#0E3A24]/50 md:hidden">
+        <p className="mt-0.5  text-[11px] font-medium text-[#0E3A24]/50 md:hidden">
           {sizeLabel}
         </p>
 
@@ -150,7 +149,7 @@ export function ClassicProductCard({
     >
       <Link
         href={`/products/${product.slug}`}
-        className="block w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
+        className="w-full aspect-square bg-[#F9F8F3] relative overflow-hidden flex items-center justify-center p-4"
       >
         {product.images && product.images.length > 0 ? (
           <Image
@@ -176,11 +175,6 @@ export function ClassicProductCard({
       </Link>
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
         <div className="space-y-1">
-          <div className="flex items-center gap-0.5 text-amber-500">
-            {[...Array(5)].map((_, i) => (
-              <Star key={i} className="w-3 h-3 fill-current" />
-            ))}
-          </div>
           <Link href={`/products/${product.slug}`}>
             <h3 className="font-normal text-[#0E3A24] text-sm sm:text-base line-clamp-2 min-h-[40px] leading-tight hover:text-[#3B7A42] transition-colors">
               {product.name}
