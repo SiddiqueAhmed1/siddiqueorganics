@@ -252,7 +252,7 @@ export default function CheckoutPage() {
                 key={`${item.id}-${item.weight}`}
                 className="flex items-center gap-3 border-b border-[#F9F8F3] pb-3"
               >
-                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0 rounded-xl bg-[#F9F8F3] overflow-hidden flex items-center justify-center">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 shrink-0  bg-[#F9F8F3] overflow-hidden flex items-center justify-center">
                   {item.image ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -261,7 +261,7 @@ export default function CheckoutPage() {
                       width={80}
                       height={80}
                       loading="lazy"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover border border-green-800/10 rounded-md"
                     />
                   ) : (
                     <ShoppingBag className="w-6 h-6 text-[#0E3A24]/30" />
