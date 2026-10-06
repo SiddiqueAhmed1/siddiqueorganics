@@ -388,7 +388,7 @@ export default function ProductDetails({
             <span className="inline-block text-[11px] font-extrabold uppercase tracking-wider text-[#3B7A42] bg-[#3B7A42]/10 px-2.5 py-1 rounded-full">
               {product.category}
             </span>
-            <h1 className="text-xl sm:text-3xl font-normal text-[#0E3A24] leading-tight">
+            <h1 className="text-xl font-semibold sm:text-3xl font-normal text-[#0E3A24] leading-tight">
               {product.name}
             </h1>
           </div>
