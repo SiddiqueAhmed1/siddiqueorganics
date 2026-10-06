@@ -53,17 +53,17 @@ export default function RootLayout({
             >
               <div className="mx-auto flex max-w-[1420px] h-16 sm:h-20 items-center justify-between gap-2 sm:gap-10">
                 {/* 1. Left Viewport: Absolute Protected Mix-Blend Logo */}
-                <div className="flex-shrink-0 flex items-center justify-start h-16 sm:h-20 w-[108px] min-[400px]:w-[140px] sm:w-[175px]">
+                <div className="flex-shrink-0 flex items-center justify-start h-16 sm:h-20 w-[140px] min-[400px]:w-[140px] sm:w-[175px]">
                   <Link
                     href="/"
                     className="flex items-center group relative w-full h-full mix-blend-multiply"
                   >
                     <Image
-                      src="/photos/header-logo.webp"
+                      src="/photos/siddique-organics-logo.png"
                       alt="Siddique Organics"
                       width={150}
                       height={120}
-                      className="h-auto w-[108px] min-[400px]:w-[140px] sm:w-[150px] object-contain object-left"
+                      className="h-auto w-[140px] min-[400px]:w-[140px] sm:w-[150px] object-contain object-left"
                       priority
                     />
                   </Link>

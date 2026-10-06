@@ -55,7 +55,7 @@ export default function Footer() {
                 width={150}
                 height={120}
                 className="h-auto w-[130px]"
-                src="/photos/header-logo.webp"
+                src="/photos/siddique-organics-logo.png"
                 alt={SITE.name}
               />
             </Link>
