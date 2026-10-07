@@ -11,8 +11,8 @@ export const SITE = {
   address: "Dhaka, Bangladesh", // TODO: replace with your full shop address
   social: {
     // TODO: replace "#" with your real page URLs
-    facebook: "#",
-    youtube: "#",
-    instagram: "#",
+    facebook: "https://www.facebook.com/SiddiqueOrganics",
+    youtube: "https://www.youtube.com/@SiddiqueOrganics",
+    instagram: "https://www.instagram.com/siddiqueorganics",
   },
 } as const;
