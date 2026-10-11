@@ -50,7 +50,7 @@ export default function TrackOrderPage() {
   };
 
   return (
-    <main className="min-h-screen bg-[#F6F2E8] px-4 sm:px-6 py-10 sm:py-16 flex justify-center">
+    <main className="min-h-screen  px-4 sm:px-6 py-10 sm:py-16 flex justify-center">
       <div className="max-w-lg w-full">
         <div className="flex flex-col items-center text-center mb-8">
           <PackageSearch className="w-12 h-12 text-[#0E3A24] mb-3" />
@@ -73,7 +73,7 @@ export default function TrackOrderPage() {
           <button
             onClick={handleTrack}
             disabled={isPending || !phone.trim()}
-            className="h-11 px-5 rounded-xl bg-[#0E3A24] text-white font-extrabold text-sm hover:bg-[#3B7A42] transition-colors disabled:opacity-60 whitespace-nowrap"
+            className=" cursor-pointer h-11 px-5 rounded-xl bg-[#0E3A24] text-white font-extrabold text-sm hover:bg-[#3B7A42] transition-colors disabled:opacity-60 whitespace-nowrap"
           >
             {isPending ? "Searching..." : "Track"}
           </button>

@@ -3,6 +3,7 @@
 import prisma from "../lib/prisma";
 import { revalidatePath } from "next/cache";
 import { getDeliveryZone } from "../lib/delivery";
+import { getSellPrice } from "../lib/pricing";
 
 interface OrderConfirmationItem {
   productName: string;
@@ -176,7 +177,8 @@ export async function submitCustomerOrder(
           );
         }
 
-        const unitPrice = variant.price;
+        // Server-side selling price: list price minus the variant's flat discount.
+        const unitPrice = getSellPrice(variant.price, variant.discount);
         const subtotal = unitPrice * item.quantity;
         subtotalSum += subtotal;
 

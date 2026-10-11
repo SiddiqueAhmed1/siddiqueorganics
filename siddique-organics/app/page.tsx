@@ -3,6 +3,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
 import HeroSlider from "@/components/HeroSlider";
+import { toStoreVariant } from "@/lib/pricing";
 import {
   ProductCard,
   ClassicProductCard,
@@ -172,12 +173,23 @@ async function fetchStoreProducts(): Promise<ProductData[]> {
         images: true,
         variants: {
           orderBy: { price: "asc" },
-          select: { id: true, size: true, price: true, stock: true },
+          select: {
+            id: true,
+            size: true,
+            price: true,
+            discount: true,
+            stock: true,
+          },
         },
       },
     });
     // Products without any variant can't be sold, so they are hidden from the storefront.
-    return records.filter((item) => item.variants.length > 0);
+    return records
+      .filter((item) => item.variants.length > 0)
+      .map((item) => ({
+        ...item,
+        variants: item.variants.map(toStoreVariant),
+      }));
   } catch (error) {
     console.error("Failed to extract active store products:", error);
     return [];
@@ -320,12 +332,12 @@ export default async function HomePage() {
               href={`/categories/${cat.slug}`}
               className="shrink-0 w-[68px] flex flex-col items-center gap-1.5 active:scale-95 transition-transform"
             >
-              <span className="relative block w-[68px] h-[68px] rounded-2xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(14,58,36,0.1)] border border-[#0E3A24]/5">
+              <span className="relative block scale- w-[62px] h-[62px] rounded-2xl overflow-hidden bg-white shadow-[0_2px_12px_rgba(14,58,36,0.1)] border border-[#0E3A24]/5">
                 <Image
                   src={cat.img}
                   alt={cat.name}
                   fill
-                  sizes="68px"
+                  sizes="62px"
                   className="object-cover"
                 />
               </span>

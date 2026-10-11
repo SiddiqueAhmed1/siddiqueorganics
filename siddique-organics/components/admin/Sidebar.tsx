@@ -7,6 +7,7 @@ import {
   Tags,
   Users,
   Boxes,
+  ShoppingBag,
   UserRound,
   LogOut,
   X,
@@ -16,10 +17,11 @@ import { logoutEmployee } from "@/actions/auth.actions";
 const NAV = [
   { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
   { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/customers", label: "Customers", icon: Users },
-  { href: "/admin/inventory", label: "Inventory", icon: Boxes, soon: true },
-  { href: "/admin/profile", label: "Profile", icon: UserRound, soon: true },
+  { href: "/admin/inventory", label: "Inventory", icon: Boxes },
+  { href: "/admin/profile", label: "Profile", icon: UserRound },
 ];
 
 export default function Sidebar({

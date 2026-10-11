@@ -20,6 +20,7 @@ type VariantInput = {
   id?: string; // present when editing an existing variant
   size: string;
   price: number;
+  discount: number; // flat ৳ off the list price, 0 = none
   stock: number;
   sku?: string;
 };
@@ -100,6 +101,11 @@ function parseVariants(
   for (const item of parsed as Record<string, unknown>[]) {
     const size = typeof item.size === "string" ? item.size.trim() : "";
     const price = Number(item.price);
+    // Discount is optional (older forms don't send it) and defaults to 0.
+    const discount =
+      item.discount === undefined || item.discount === null || item.discount === ""
+        ? 0
+        : Number(item.discount);
     const stock = Number(item.stock);
     const sku =
       typeof item.sku === "string" && item.sku.trim()
@@ -111,6 +117,12 @@ function parseVariants(
       return { error: "Every variant needs a size (max 30 chars)." };
     if (!Number.isFinite(price) || price <= 0)
       return { error: `Invalid price for size "${size}".` };
+    if (!Number.isFinite(discount) || discount < 0)
+      return { error: `Invalid discount for size "${size}".` };
+    if (discount >= price)
+      return {
+        error: `Discount for size "${size}" must be less than its price (৳${price}).`,
+      };
     if (!Number.isInteger(stock) || stock < 0)
       return { error: `Invalid stock for size "${size}".` };
 
@@ -122,7 +134,7 @@ function parseVariants(
       if (skus.has(sku)) return { error: `Duplicate SKU "${sku}".` };
       skus.add(sku);
     }
-    variants.push({ id, size, price, stock, sku });
+    variants.push({ id, size, price, discount, stock, sku });
   }
   return { variants };
 }
@@ -322,6 +334,7 @@ export async function createProduct(
           productId: created.id,
           size: v.size,
           price: v.price,
+          discount: v.discount,
           stock: v.stock,
           sku: v.sku ?? buildSku(slug, v.size),
         })),
@@ -411,6 +424,7 @@ export async function updateProduct(
             data: {
               size: v.size,
               price: v.price,
+              discount: v.discount,
               stock: v.stock,
               ...(v.sku ? { sku: v.sku } : {}),
             },
@@ -421,6 +435,7 @@ export async function updateProduct(
               productId: id,
               size: v.size,
               price: v.price,
+              discount: v.discount,
               stock: v.stock,
               sku: v.sku ?? buildSku(product.slug, v.size),
             },
@@ -483,6 +498,8 @@ export async function updateOrderStatus(
     });
 
     revalidatePath("/admin");
+    revalidatePath("/admin/orders");
+    revalidatePath("/admin/customers");
     return {
       success: true,
       message: `Order routing milestone updated to [${newStatus}]`,
@@ -543,5 +560,38 @@ export async function getCustomerDirectoryLog(): Promise<AdminActionResponse> {
     };
   } catch (error) {
     return fail(error, "Customer tracking extraction failure.");
+  }
+}
+
+/* -------------------------------------------------------------------------- */
+/*                                  INVENTORY                                 */
+/* -------------------------------------------------------------------------- */
+
+/** Sets the exact stock for one size (variant). Used by the admin Inventory page. */
+export async function updateVariantStock(
+  variantId: string,
+  stock: number,
+): Promise<AdminActionResponse> {
+  try {
+    await requireSession();
+    if (!Number.isInteger(stock) || stock < 0 || stock > 100000) {
+      return {
+        success: false,
+        message: "Stock must be a whole number between 0 and 100000.",
+      };
+    }
+    await prisma.productVariant.update({
+      where: { id: variantId },
+      data: { stock },
+    });
+    revalidatePath("/");
+    revalidatePath("/admin");
+    revalidatePath("/admin/inventory");
+    revalidatePath("/admin/products");
+    return { success: true, message: "Stock updated." };
+  } catch (error) {
+    if (hasCode(error, "P2025"))
+      return { success: false, message: "Variant not found." };
+    return fail(error, "Stock update failed.");
   }
 }

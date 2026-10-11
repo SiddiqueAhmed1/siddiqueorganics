@@ -14,7 +14,14 @@ export default async function ProductsPage() {
         category: { select: { id: true, name: true } },
         variants: {
           orderBy: { price: "asc" },
-          select: { id: true, size: true, price: true, stock: true, sku: true },
+          select: {
+            id: true,
+            size: true,
+            price: true,
+            discount: true,
+            stock: true,
+            sku: true,
+          },
         },
       },
     }),

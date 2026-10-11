@@ -4,6 +4,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import prisma from "@/lib/prisma";
 import ProductDetails from "@/components/ProductDetails";
+import { toStoreVariant } from "@/lib/pricing";
 
 // Refreshed at most once a minute (same policy as the home page).
 export const revalidate = 60;
@@ -19,7 +20,7 @@ const getProduct = cache(async (slug: string) => {
         category: { select: { name: true } },
         variants: {
           orderBy: { price: "asc" },
-          select: { id: true, size: true, price: true, stock: true },
+          select: { id: true, size: true, price: true, discount: true, stock: true },
         },
       },
     });
@@ -66,7 +67,7 @@ export default async function ProductPage({ params }: Props) {
             category: product.category.name,
             images: product.images,
             description: product.description,
-            variants: product.variants,
+            variants: product.variants.map(toStoreVariant),
           }}
         />
       </section>

@@ -2,6 +2,7 @@
 
 import prisma from "../lib/prisma";
 import { unstable_cache } from "next/cache";
+import { getSellPrice } from "../lib/pricing";
 
 export interface SearchProductItem {
   id: string;
@@ -28,13 +29,13 @@ export const getAllSearchableProducts = unstable_cache(
           },
           variants: {
             orderBy: { price: "asc" },
-            select: { price: true },
+            select: { price: true, discount: true },
           },
         },
       });
 
       return rows.map((r) => {
-        const prices = r.variants.map((v) => v.price);
+        const prices = r.variants.map((v) => getSellPrice(v.price, v.discount));
         return {
           id: r.id,
           name: r.name,

@@ -8,6 +8,7 @@ import CategoryProducts, {
   type CategoryProduct,
 } from "@/components/CategoryProducts";
 import { SITE } from "@/lib/site";
+import { toStoreVariant } from "@/lib/pricing";
 import { Phone, MessageCircle, PackageX } from "lucide-react";
 
 export const revalidate = 60;
@@ -33,7 +34,7 @@ const getCategoryData = cache(async (slug: string) => {
             images: true,
             variants: {
               orderBy: { price: "asc" },
-              select: { id: true, size: true, price: true, stock: true },
+              select: { id: true, size: true, price: true, discount: true, stock: true },
             },
           },
         },
@@ -77,7 +78,10 @@ export default async function CategoryPage({ params }: Props) {
     name: data.name,
     bn: getBengaliMeta(slug)?.bn ?? data.name,
   };
-  const products: CategoryProduct[] = data.products;
+  const products: CategoryProduct[] = data.products.map((p) => ({
+    ...p,
+    variants: p.variants.map(toStoreVariant),
+  }));
   const bnFont = {
     fontFamily: "var(--font-open-sans), var(--font-hind), sans-serif",
   };

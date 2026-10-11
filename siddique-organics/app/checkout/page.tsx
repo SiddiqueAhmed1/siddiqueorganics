@@ -116,11 +116,14 @@ export default function CheckoutPage() {
 
   if (hydrated && cart.length === 0) {
     return (
-      <main className="min-h-screen flex flex-col items-center justify-center gap-4 px-4 text-center">
+      <main className="min-h-screen flex flex-col items-center justify-center gap-6 px-4 text-center">
+        <i>
+          <ShoppingBag className="w-24 h-24 text-[#0E3A24]/80" />
+        </i>
         <p className="text-[#0E3A24] font-bold text-lg">Your cart is empty.</p>
         <button
           onClick={() => router.push("/")}
-          className="px-6 py-3 rounded-xl bg-[#0E3A24] text-white font-bold"
+          className="cursor-pointer px-6 py-3 rounded-xl bg-[#0E3A24] hover:bg-[#0E3A24]/80 text-white font-bold"
         >
           Continue Shopping
         </button>

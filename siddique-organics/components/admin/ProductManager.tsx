@@ -12,6 +12,7 @@ type Variant = {
   id: string;
   size: string;
   price: number;
+  discount: number;
   stock: number;
   sku: string;
 };
@@ -35,12 +36,19 @@ type Row = {
   id?: string;
   size: string;
   price: string;
+  discount: string;
   stock: string;
   sku: string;
 };
-const blankRow = (): Row => ({ size: "", price: "", stock: "0", sku: "" });
+const blankRow = (): Row => ({
+  size: "",
+  price: "",
+  discount: "0",
+  stock: "0",
+  sku: "",
+});
 
-/** Dynamic size/price/stock rows. Serialised into one hidden `variants` JSON field. */
+/** Dynamic size/price/discount/stock rows. Serialised into one hidden `variants` JSON field. */
 function VariantEditor({ initial }: { initial?: Variant[] }) {
   const [rows, setRows] = useState<Row[]>(
     initial?.length
@@ -48,6 +56,7 @@ function VariantEditor({ initial }: { initial?: Variant[] }) {
           id: v.id,
           size: v.size,
           price: String(v.price),
+          discount: String(v.discount ?? 0),
           stock: String(v.stock),
           sku: v.sku,
         }))
@@ -61,6 +70,7 @@ function VariantEditor({ initial }: { initial?: Variant[] }) {
       id: r.id,
       size: r.size,
       price: Number(r.price),
+      discount: Number(r.discount) || 0,
       stock: Number(r.stock),
       sku: r.sku || undefined,
     })),
@@ -69,11 +79,13 @@ function VariantEditor({ initial }: { initial?: Variant[] }) {
   return (
     <div className="sm:col-span-3 space-y-2">
       <input type="hidden" name="variants" value={payload} />
-      <p className="text-sm font-medium">Variants (size · price · stock)</p>
+      <p className="text-sm font-medium">
+        Variants (size · price · discount ৳ · stock)
+      </p>
       {rows.map((r, i) => (
         <div
           key={r.id ?? i}
-          className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1.4fr_auto] gap-2"
+          className="grid grid-cols-2 sm:grid-cols-[1fr_1fr_1fr_1fr_1.4fr_auto] gap-2"
         >
           <input
             value={r.size}
@@ -88,6 +100,16 @@ function VariantEditor({ initial }: { initial?: Variant[] }) {
             step="any"
             min="0"
             placeholder="Price"
+            className={inp}
+          />
+          <input
+            value={r.discount}
+            onChange={(e) => patch(i, { discount: e.target.value })}
+            type="number"
+            step="any"
+            min="0"
+            placeholder="Discount ৳ (0)"
+            title="Flat ৳ taken off the price"
             className={inp}
           />
           <input
@@ -258,7 +280,7 @@ export default function ProductManager({
         <table className="w-full text-sm">
           <thead className="bg-[#0E3A24] text-white text-left">
             <tr>
-              {["Name", "Category", "Variants (size · price · stock)", ""].map(
+              {["Name", "Category", "Variants (size · price · discount · stock)", ""].map(
                 (h) => (
                   <th key={h} className="px-4 py-2">
                     {h}
@@ -276,7 +298,14 @@ export default function ProductManager({
                   <ul className="space-y-0.5">
                     {p.variants.map((v) => (
                       <li key={v.id} className="whitespace-nowrap">
-                        {v.size} · ৳{v.price} ·{" "}
+                        {v.size} · ৳{v.price}
+                        {v.discount > 0 && (
+                          <span className="text-[#6C4E31]">
+                            {" "}
+                            (−৳{v.discount} → ৳{v.price - v.discount})
+                          </span>
+                        )}{" "}
+                        ·{" "}
                         <span
                           className={`font-semibold ${v.stock <= 5 ? "text-red-600" : "text-[#3B7A42]"}`}
                         >

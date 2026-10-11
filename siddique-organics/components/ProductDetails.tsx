@@ -21,7 +21,10 @@ import { SITE } from "@/lib/site";
 export interface ProductDetailsVariant {
   id: string;
   size: string;
+  /** Selling price (after discount). */
   price: number;
+  /** Original list price, present only when the variant is discounted. */
+  mrp?: number;
   stock: number;
 }
 
@@ -60,6 +63,7 @@ export default function ProductDetails({
   const actionsRef = useRef<HTMLDivElement>(null);
 
   const price = selected?.price ?? 0;
+  const mrp = selected?.mrp && selected.mrp > price ? selected.mrp : null;
   const soldOut = stock <= 0;
   const maxQty = Math.max(1, Math.min(MAX_QTY_PER_ITEM, stock));
   const cartImage = images[0] ?? "/placeholder.png";
@@ -199,9 +203,16 @@ export default function ProductDetails({
 
           {/* Price + quantity stepper */}
           <div className="flex items-center justify-between">
-            <span className="text-2xl font-extrabold text-[#6C4E31]">
-              ৳{price}
-            </span>
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-[#6C4E31]">
+                ৳{price}
+              </span>
+              {mrp ? (
+                <s className="text-base font-normal text-[#0E3A24]/40">
+                  ৳{mrp}
+                </s>
+              ) : null}
+            </div>
             <div className="flex items-center gap-3">
               <button
                 type="button"
@@ -397,6 +408,11 @@ export default function ProductDetails({
             <span className="text-2xl sm:text-3xl font-extrabold text-[#6C4E31]">
               ৳{price}
             </span>
+            {mrp ? (
+              <s className="text-base sm:text-lg font-normal text-[#0E3A24]/40">
+                ৳{mrp}
+              </s>
+            ) : null}
             <span
               className={`text-xs font-bold px-2.5 py-1 rounded-full ${
                 soldOut

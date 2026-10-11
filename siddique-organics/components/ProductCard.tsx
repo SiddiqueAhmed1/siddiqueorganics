@@ -5,7 +5,10 @@ import CartButtons from "@/components/CartButtons";
 export interface CardVariant {
   id: string;
   size: string;
+  /** Selling price (after discount). */
   price: number;
+  /** Original list price, present only when the variant is discounted. */
+  mrp?: number;
   stock: number;
 }
 
@@ -29,10 +32,16 @@ function summarize(product: CardProduct, weight: string = "all") {
   const lo = prices.length ? Math.min(...prices) : 0;
   const hi = prices.length ? Math.max(...prices) : 0;
   const priceLabel = lo === hi ? `৳${lo}` : `৳${lo} - ৳${hi}`;
+  // Strike-through original price only when there is a single, discounted price.
+  const cheapest = list.reduce((a, b) => (b.price < a.price ? b : a), list[0]);
+  const mrp =
+    lo === hi && cheapest?.mrp && cheapest.mrp > cheapest.price
+      ? cheapest.mrp
+      : null;
   const sizes = list.map((v) => v.size);
   const sizeLabel =
     sizes.length <= 2 ? sizes.join(" / ") : `${sizes.length} sizes`;
-  return { stock, priceLabel, sizeLabel };
+  return { stock, priceLabel, sizeLabel, mrp };
 }
 
 /**
@@ -51,7 +60,7 @@ export function ProductCard({
   /** Small #N badge (mobile top-selling grid). */
   rank?: number;
 }) {
-  const { stock, priceLabel, sizeLabel } = summarize(product, weight);
+  const { stock, priceLabel, sizeLabel, mrp } = summarize(product, weight);
   const soldOut = stock <= 0;
   const lowStock = !soldOut && stock <= 5;
 
@@ -110,6 +119,11 @@ export function ProductCard({
         <div className="mt-auto flex items-center justify-between gap-2 pt-3 md:pt-4">
           <span className="font-extrabold text-[#6C4E31] text-sm md:text-lg whitespace-nowrap">
             {priceLabel}
+            {mrp ? (
+              <s className="ml-1.5 text-[11px] font-normal text-[#0E3A24]/40">
+                ৳{mrp}
+              </s>
+            ) : null}
           </span>
           {soldOut ? (
             <span className="shrink-0 rounded-xl bg-[#0E3A24]/10 px-3 h-9 md:h-10 flex items-center text-[11px] md:text-sm font-bold text-[#0E3A24]/50">
@@ -141,11 +155,11 @@ export function ClassicProductCard({
   product: CardProduct;
   rank: number;
 }) {
-  const { stock, priceLabel, sizeLabel } = summarize(product);
+  const { stock, priceLabel, sizeLabel, mrp } = summarize(product);
   return (
     <div
       data-product-card
-      className="group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative border-2 border-amber-400/50 h-full"
+      className="group rounded-2xl bg-white shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between overflow-hidden relative border-2 border-green-800/40 h-full"
     >
       <Link
         href={`/products/${product.slug}`}
@@ -188,6 +202,11 @@ export function ClassicProductCard({
             </span>
             <span className="text-[#6C4E31] font-extrabold text-sm sm:text-lg">
               {priceLabel}
+              {mrp ? (
+                <s className="ml-1.5 text-[11px] font-normal text-[#0E3A24]/40">
+                  ৳{mrp}
+                </s>
+              ) : null}
             </span>
           </div>
           <CartButtons

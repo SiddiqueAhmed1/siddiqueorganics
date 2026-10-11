@@ -20,7 +20,10 @@ export interface ProductModalProduct {
 export interface ProductModalVariant {
   id: string;
   size: string;
+  /** Selling price (after discount). */
   price: number;
+  /** Original list price, present only when the variant is discounted. */
+  mrp?: number;
   stock: number;
 }
 
@@ -146,6 +149,11 @@ export default function ProductModal({
                   </p>
                   <p className="text-[#6C4E31] font-bold text-sm mt-0.5">
                     ৳{option.price}
+                    {option.mrp && option.mrp > option.price ? (
+                      <s className="ml-1.5 text-[11px] font-normal text-[#0E3A24]/40">
+                        ৳{option.mrp}
+                      </s>
+                    ) : null}
                   </p>
                 </button>
               ))}

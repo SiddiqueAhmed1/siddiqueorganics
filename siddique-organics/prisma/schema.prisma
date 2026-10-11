@@ -45,6 +45,7 @@ model ProductVariant {
   productId  String
   size       String
   price      Float
+  discount   Float       @default(0)
   stock      Int         @default(0)
   sku        String      @unique
   orderItems OrderItem[]
