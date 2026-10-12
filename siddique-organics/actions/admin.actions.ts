@@ -103,7 +103,9 @@ function parseVariants(
     const price = Number(item.price);
     // Discount is optional (older forms don't send it) and defaults to 0.
     const discount =
-      item.discount === undefined || item.discount === null || item.discount === ""
+      item.discount === undefined ||
+      item.discount === null ||
+      item.discount === ""
         ? 0
         : Number(item.discount);
     const stock = Number(item.stock);
@@ -149,7 +151,11 @@ function uniqueConflictMessage(error: unknown): string {
   return "A record with the same unique value already exists.";
 }
 
-function fail(error: unknown, fallback: string): AdminActionResponse {
+// Fixed: Made `fail` generic to match `AdminActionResponse<T>`
+function fail<T = unknown>(
+  error: unknown,
+  fallback: string,
+): AdminActionResponse<T> {
   console.error(fallback, error);
   if (hasCode(error, "P2002"))
     return { success: false, message: uniqueConflictMessage(error) };
@@ -221,7 +227,6 @@ export async function updateCategory(
       data: {
         ...(name ? { name } : {}),
         ...(slug ? { slug: slugify(slug) } : {}),
-        // The edit form always submits the uploader, so an empty value means "remove image".
         image: image || null,
       },
     });
@@ -295,10 +300,6 @@ export async function getCategories(): Promise<
 /*                        SECTION B: PRODUCTS + VARIANTS                      */
 /* -------------------------------------------------------------------------- */
 
-/**
- * Creates a product and all of its variants atomically.
- * Expects FormData: name, slug?, description, categoryId, images[], variants (JSON string).
- */
 export async function createProduct(
   prevState: AdminActionResponse | null,
   formData: FormData,
@@ -362,13 +363,6 @@ export async function createProduct(
   }
 }
 
-/**
- * Updates a product and syncs its variants atomically:
- *  - variants with a known `id`   -> updated
- *  - variants without an `id`     -> created
- *  - existing variants not sent   -> deleted (past orders keep their `size` snapshot)
- * The slug is intentionally immutable so public URLs never break.
- */
 export async function updateProduct(
   id: string,
   formData: FormData,
@@ -410,7 +404,6 @@ export async function updateProduct(
       );
       const removeIds = [...existingIds].filter((vid) => !keptIds.has(vid));
 
-      // Delete first so freed sizes/SKUs can be reused in the same save.
       if (removeIds.length > 0) {
         await tx.productVariant.deleteMany({
           where: { id: { in: removeIds } },
@@ -461,7 +454,6 @@ export async function updateProduct(
   }
 }
 
-/** Delete a product. Variants cascade; products that already have orders are blocked by the DB. */
 export async function deleteProduct(id: string): Promise<AdminActionResponse> {
   try {
     await requireSession();
@@ -567,7 +559,6 @@ export async function getCustomerDirectoryLog(): Promise<AdminActionResponse> {
 /*                                  INVENTORY                                 */
 /* -------------------------------------------------------------------------- */
 
-/** Sets the exact stock for one size (variant). Used by the admin Inventory page. */
 export async function updateVariantStock(
   variantId: string,
   stock: number,

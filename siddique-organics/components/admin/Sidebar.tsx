@@ -62,25 +62,13 @@ export default function Sidebar({
         <p className="px-3 pb-2 pt-3 text-[10px] font-semibold uppercase tracking-widest text-white/40">
           Menu
         </p>
-        {NAV.map(({ href, label, icon: Icon, soon }) => {
+        {/* Fixed: Removed `soon` from destructuring */}
+        {NAV.map(({ href, label, icon: Icon }) => {
           const cls = `group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
             active(href)
               ? "bg-white/10 text-white shadow-[inset_3px_0_0_#7BC47F]"
               : "text-white/70 hover:bg-white/5 hover:text-white"
           }`;
-          if (soon)
-            return (
-              <div
-                key={href}
-                className={`${cls} cursor-not-allowed opacity-50`}
-              >
-                <Icon className="h-[18px] w-[18px]" />
-                <span className="flex-1">{label}</span>
-                <span className="rounded bg-white/10 px-1.5 py-0.5 text-[9px] uppercase">
-                  Soon
-                </span>
-              </div>
-            );
           return (
             <Link
               key={href}

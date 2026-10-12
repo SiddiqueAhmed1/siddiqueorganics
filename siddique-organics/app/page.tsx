@@ -321,7 +321,7 @@ export default async function HomePage() {
       </section>
 
       {/* SHOP BY CATEGORY — mobile: scrolling icon chips, desktop: card grid */}
-      <section className="space-y-4">
+      <section className="space-y-4 ">
         <SectionHeading title="Shop by Category" />
 
         {/* Mobile chips (design: rounded icon tiles with label underneath) */}

@@ -94,16 +94,6 @@ export function ProductCard({
             Out of Stock
           </span>
         )}
-        {lowStock && (
-          <span className="absolute top-2.5 left-2.5 bg-[#6C4E31] text-white font-extrabold text-[10px] sm:text-xs px-2.5 py-1 rounded-full shadow-sm">
-            Low Stock
-          </span>
-        )}
-        {rank && (
-          <span className="absolute top-2.5 right-2.5 bg-amber-500 text-white font-extrabold text-[10px] px-2 py-0.5 rounded-full shadow-sm">
-            #{rank}
-          </span>
-        )}
       </Link>
 
       <div className="flex flex-1 flex-col p-3 md:p-5">
@@ -178,14 +168,6 @@ export function ClassicProductCard({
             No Image
           </span>
         )}
-        {stock <= 5 && stock > 0 && (
-          <span className="absolute top-2 left-2 bg-[#6C4E31] text-white font-extrabold text-[9px] sm:text-sm px-2 py-0.5 rounded-full shadow-sm">
-            Low Stock
-          </span>
-        )}
-        <span className="absolute top-2 right-2 bg-amber-500 text-white font-extrabold text-[9px] sm:text-xs px-2 py-0.5 rounded-full shadow-sm">
-          #{rank} Best Seller
-        </span>
       </Link>
       <div className="p-3 sm:p-5 flex-1 flex flex-col justify-between gap-2 sm:gap-4">
         <div className="space-y-1">
